@@ -12,6 +12,7 @@ python-dotenv = "==1.0.0"
 tiktoken = "*"
 chromadb = "*"
 black = "*"
+langchainhub = "*"
 
 [dev-packages]
 
