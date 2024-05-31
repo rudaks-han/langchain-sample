@@ -1,0 +1,15 @@
+{
+  "name": null,
+  "input_variables": [
+    "num1",
+    "num2",
+    "operator"
+  ],
+  "input_types": {},
+  "output_parser": null,
+  "partial_variables": {},
+  "template": "{num1} {operator} {num2}는?",
+  "template_format": "f-string",
+  "validate_template": false,
+  "_type": "prompt"
+}
