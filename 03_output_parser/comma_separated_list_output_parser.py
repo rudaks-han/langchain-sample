@@ -30,8 +30,8 @@ model = ChatOpenAI(temperature=0)
 chain = prompt | model | output_parser
 
 question = "서초역 맛집"
-# result = chain.invoke({"subject": question})
-# print(result)
+result = chain.invoke({"subject": question})
+print(result)
 
-for s in chain.stream({"subject": question}):
-    print(f"> {s}")
+# for s in chain.stream({"subject": question}):
+#     print(f"> {s}")

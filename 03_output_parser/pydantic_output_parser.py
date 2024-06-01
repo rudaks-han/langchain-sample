@@ -1,5 +1,6 @@
 from typing import List
 
+import langchain
 from dotenv import load_dotenv
 from langchain.output_parsers import PydanticOutputParser
 from langchain_core.prompts import PromptTemplate
@@ -7,6 +8,7 @@ from langchain_core.pydantic_v1 import Field
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 
+langchain.debug = True
 load_dotenv()
 
 
