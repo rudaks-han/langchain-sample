@@ -36,9 +36,7 @@ bm25_retriever = BM25Retriever.from_texts(
 )
 bm25_retriever.k = 1  # BM25Retriever의 검색 결과 개수를 1로 설정합니다.
 
-vectorstore = Chroma(
-    collection_name="ensemble", embedding_function=OpenAIEmbeddings()
-)
+vectorstore = Chroma(collection_name="ensemble", embedding_function=OpenAIEmbeddings())
 
 query = "비타민A 의 효능은?"
 # 벡터 저장소를 사용하여 retriever를 생성하고, 검색 결과 개수를 1로 설정합니다.

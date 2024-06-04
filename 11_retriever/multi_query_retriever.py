@@ -18,10 +18,7 @@ if __name__ == "__main__":
     chat = ChatOpenAI()
     embeddings = OpenAIEmbeddings()
 
-    db = Chroma(
-        persist_directory="chroma_emb",
-        embedding_function=embeddings
-    )
+    db = Chroma(persist_directory="chroma_emb", embedding_function=embeddings)
 
     llm = ChatOpenAI(temperature=0)
 
