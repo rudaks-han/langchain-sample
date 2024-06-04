@@ -18,6 +18,7 @@ pillow = "*"
 scikit-learn = "*"
 faiss-cpu = "*"
 lark = "*"
+beautifulsoup4 = "*"
 
 [dev-packages]
 

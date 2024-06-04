@@ -1,3 +1,5 @@
+import uuid
+
 from dotenv import load_dotenv
 from langchain.retrievers.multi_vector import MultiVectorRetriever
 from langchain.storage import InMemoryByteStore
@@ -15,8 +17,6 @@ loaders = [
 docs = []
 for loader in loaders:
     docs.extend(loader.load())
-text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000)
-docs = text_splitter.split_documents(docs)
 
 # The vectorstore to use to index the child chunks
 vectorstore = Chroma(
@@ -33,23 +33,12 @@ retriever = MultiVectorRetriever(
     byte_store=store,
     id_key=id_key,
 )
-import uuid
 
 doc_ids = [str(uuid.uuid4()) for _ in docs]
 
 parent_text_splitter = RecursiveCharacterTextSplitter(chunk_size=4000)
 child_text_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
 
-# sub_docs = []
-# for i, doc in enumerate(docs):
-#     _id = doc_ids[i]
-#     _sub_docs = child_text_splitter.split_documents([doc])
-#     for _doc in _sub_docs:
-#         _doc.metadata[id_key] = _id
-#     sub_docs.extend(_sub_docs)
-#
-# retriever.vectorstore.add_documents(sub_docs)
-# retriever.docstore.mset(list(zip(doc_ids, docs)))
 parent_docs = []
 
 for i, doc in enumerate(docs):
