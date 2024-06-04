@@ -13,6 +13,11 @@ tiktoken = "*"
 chromadb = "*"
 black = "*"
 langchainhub = "*"
+langchain-google-genai = "*"
+pillow = "*"
+scikit-learn = "*"
+faiss-cpu = "*"
+lark = "*"
 
 [dev-packages]
 
