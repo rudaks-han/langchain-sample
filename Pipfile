@@ -19,6 +19,8 @@ scikit-learn = "*"
 faiss-cpu = "*"
 lark = "*"
 beautifulsoup4 = "*"
+langchain-chroma = "*"
+sentence-transformers = "*"
 
 [dev-packages]
 
