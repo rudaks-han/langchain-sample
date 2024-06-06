@@ -21,6 +21,10 @@ lark = "*"
 beautifulsoup4 = "*"
 langchain-chroma = "*"
 sentence-transformers = "*"
+langchain-elasticsearch = "*"
+install = "*"
+numpy = "*"
+scipy = "*"
 
 [dev-packages]
 
