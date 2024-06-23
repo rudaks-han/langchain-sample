@@ -56,29 +56,39 @@ def run():
 
     # EmbeddingsFilter (LLM 호출 안함)
     # compression_retriever = embeddings_filter_retriever()
-    embeddings_filter = EmbeddingsFilter(
-        embeddings=embeddings, similarity_threshold=0.86
-    )
+    # embeddings_filter = EmbeddingsFilter(
+    #     embeddings=embeddings, similarity_threshold=0.86
+    # )
+    #
+    # compression_retriever = ContextualCompressionRetriever(
+    #     base_compressor=embeddings_filter,
+    #     base_retriever=retriever,
+    # )
+    #
+    # compressed_docs = compression_retriever.invoke(question)
+    # print(f"####################### EmbeddingsFilter 압축 검색 결과 #################")
+    # for i, doc in enumerate(compressed_docs):
+    #     print(f"[문서 {i}] {doc.page_content.replace('\n', ' ')}")
 
+    # Pipeline (LLM 호출 안함)
+    # compression_retriever = pipline_retriever()
+    splitter = RecursiveCharacterTextSplitter(chunk_size=300, chunk_overlap=0)
+    redundant_filter = EmbeddingsRedundantFilter(embeddings=embeddings)
+    relevant_filter = EmbeddingsFilter(embeddings=embeddings, similarity_threshold=0.86)
+    pipeline_compressor = DocumentCompressorPipeline(
+        transformers=[splitter, redundant_filter, relevant_filter]
+    )
     compression_retriever = ContextualCompressionRetriever(
-        base_compressor=embeddings_filter,
+        base_compressor=pipeline_compressor,
         base_retriever=retriever,
     )
 
     compressed_docs = compression_retriever.invoke(question)
-    print(f"####################### EmbeddingsFilter 압축 검색 결과 #################")
+    print(f"####################### 압축 검색 결과 #################")
     for i, doc in enumerate(compressed_docs):
+        # print(doc.metadata)
         print(f"[문서 {i}] {doc.page_content.replace('\n', ' ')}")
 
-    # Pipeline (LLM 호출 안함)
-    # compression_retriever = pipline_retriever()
-
-    # compressed_docs = compression_retriever.invoke(question)
-    # print(f"####################### 압축 검색 결과 #################")
-    # for i, doc in enumerate(compressed_docs):
-    #     # print(doc.metadata)
-    #     print(f"[문서 {i}] {doc.page_content.replace('\n', ' ')}")
-    #
     # print("_________________ end ___________________")
 
 

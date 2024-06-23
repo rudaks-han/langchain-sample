@@ -9,14 +9,15 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 load_dotenv()
 
 loaders = [
-    TextLoader("./data/news.txt"),
-    TextLoader("./data/news2.txt"),
+    # TextLoader("./data/news.txt"),
+    # TextLoader("./data/news2.txt"),
+    TextLoader("./data/jira.txt"),
 ]
 docs = []
 for loader in loaders:
     docs.extend(loader.load())
 
-parent_splitter = RecursiveCharacterTextSplitter(chunk_size=900)
+parent_splitter = RecursiveCharacterTextSplitter(chunk_size=5000)
 child_splitter = RecursiveCharacterTextSplitter(chunk_size=300)
 
 vectorstore = Chroma(

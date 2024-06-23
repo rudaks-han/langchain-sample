@@ -8,7 +8,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 load_dotenv()
 
 
-parent_splitter = RecursiveCharacterTextSplitter(chunk_size=900)
+parent_splitter = RecursiveCharacterTextSplitter(chunk_size=5000)
 child_splitter = RecursiveCharacterTextSplitter(chunk_size=300)
 
 vectorstore = Chroma(
@@ -27,7 +27,8 @@ retriever = ParentDocumentRetriever(
     child_splitter=child_splitter,
 )
 
-question = "비타민은 우리몸에 어떤 역할을 하는가?"
+# question = "비타민은 우리몸에 어떤 역할을 하는가?"
+question = "Multi Application 구조 검토는 어떤 방향으로?"
 sub_docs = vectorstore.similarity_search(question)
 
 print(f"자식 문서에서의 결과 개수: {len(sub_docs)}")
