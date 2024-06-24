@@ -25,6 +25,7 @@ langchain-elasticsearch = "*"
 install = "*"
 numpy = "*"
 scipy = "*"
+elasticsearch = "*"
 
 [dev-packages]
 
