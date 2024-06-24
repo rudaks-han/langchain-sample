@@ -6,8 +6,10 @@ from langchain_core.documents import Document
 
 
 class CustomElasticSearchBM25Retriever(ElasticSearchBM25Retriever):
+    search_args = {}
+
     def __init__(self, **search_args):
-        super.__init__()
+        super().__init__(**search_args)
         self.search_args = search_args
 
     def _get_relevant_documents(
@@ -16,14 +18,14 @@ class CustomElasticSearchBM25Retriever(ElasticSearchBM25Retriever):
         query_dict = {"query": {"match": {"content": query}}}
 
         size = -1
-        if "kwargs" in kwargs and "k" in kwargs["kwargs"]:
-            size = kwargs["kwargs"]["k"]
+        if "search_args" in self.search_args and "k" in self.search_args["search_args"]:
+            size = self.search_args["search_args"]["k"]
 
         res = self.client.search(index=self.index_name, body=query_dict)
 
         docs = []
         for i, r in enumerate(res["hits"]["hits"]):
             docs.append(Document(page_content=r["_source"]["content"]))
-            if size > -1 and i >= kwargs["k"]:
+            if -1 < size <= i + 1:
                 break
         return docs
