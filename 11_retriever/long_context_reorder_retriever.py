@@ -52,8 +52,8 @@ template = """Given this text extracts:
 def run():
 
     docs = run_retriever(question)
-    reordered_docs = run_long_context_reorder(docs)
-    run_reorder_document(reordered_docs)
+    run_long_context_reorder(docs)
+    # run_reorder_document(docs)
     prompt = ChatPromptTemplate.from_template(template)
     chain = (
         {
