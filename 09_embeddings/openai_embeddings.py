@@ -3,7 +3,6 @@ from langchain_openai import OpenAIEmbeddings
 
 
 load_dotenv()
-
 # OpenAI의 "text-embedding-3-large" 모델을 사용하여 임베딩을 생성합니다.
 # embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
 # embeddings = OpenAIEmbeddings()

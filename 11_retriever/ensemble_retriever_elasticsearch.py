@@ -1,6 +1,7 @@
 import os
 
 from dotenv import load_dotenv
+from langchain_community.retrievers import ElasticSearchBM25Retriever
 from langchain_openai.embeddings import OpenAIEmbeddings
 
 from custom_elastic_search_store import CustomElasticSearchStore
@@ -34,10 +35,10 @@ vector_store = CustomElasticSearchStore(
 elasticsearch_client = vector_store.client
 
 # 기본 bm25 검색
-# bm25_retriever = ElasticSearchBM25Retriever(
-#     client=elasticsearch_client, index_name=index_name
-# )
-# bm25_docs = bm25_retriever.invoke(question)
+bm25_retriever = ElasticSearchBM25Retriever(
+    client=elasticsearch_client, index_name=index_name
+)
+bm25_docs = bm25_retriever.invoke(question)
 #
 # print(f"####################### bm25 검색 결과 #################")
 # for doc in bm25_docs:
