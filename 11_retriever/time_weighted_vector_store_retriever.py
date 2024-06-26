@@ -27,8 +27,10 @@ def low_rate():
         vectorstore=vectorstore, decay_rate=0.0000000000000000000000001, k=2
     )
 
-    today = datetime.now()
-    yesterday = today - timedelta(days=1)
+    # today = datetime.now()
+    today = datetime(2024, 5, 26, 20, 5, 32)
+    # yesterday = today - timedelta(days=1)
+    yesterday = datetime(2024, 1, 25, 20, 5, 32)
 
     print("today:", today)
     print("yesterday:", yesterday)
@@ -36,18 +38,15 @@ def low_rate():
         [
             Document(
                 page_content="hello world yesterday",
-                metadata={"last_accessed_at": yesterday},
-            )
+                metadata={"created_at": yesterday},
+            ),
+            Document(
+                page_content="hello world today",
+                metadata={"created_at": today},
+            ),
         ]
     )
     # "hello foo" 내용의 문서를 추가합니다.
-    retriever.add_documents(
-        [
-            Document(
-                page_content="hello world today", metadata={"last_accessed_at": today}
-            )
-        ]
-    )
 
     # Hello World는 가장 중요하기 때문에 먼저 반환되며, 감쇠율이 0에 가까워 여전히 최근이기 때문입니다.
     docs = retriever.invoke("hello world")
