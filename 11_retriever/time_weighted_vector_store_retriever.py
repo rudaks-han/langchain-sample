@@ -1,4 +1,3 @@
-import os
 from datetime import datetime, timedelta
 
 import faiss
@@ -11,10 +10,6 @@ from langchain_openai import OpenAIEmbeddings
 
 load_dotenv()
 
-openai_api_key = os.getenv("OPENAI_API_KEY")
-if openai_api_key is None:
-    raise ValueError("OPENAI_API_KEY 환경 변수가 설정되지 않았습니다.")
-
 
 def low_rate():
     # 임베딩 모델 정의
@@ -24,32 +19,19 @@ def low_rate():
     index = faiss.IndexFlatL2(embedding_size)
     vectorstore = FAISS(embeddings, index, InMemoryDocstore({}), {})
     retriever = TimeWeightedVectorStoreRetriever(
-        vectorstore=vectorstore, decay_rate=0.0000000000000000000000001, k=2
+        vectorstore=vectorstore, decay_rate=0.0000000000000000000000001, k=1
     )
 
-    # today = datetime.now()
-    today = datetime(2024, 5, 26, 20, 5, 32)
-    # yesterday = today - timedelta(days=1)
-    yesterday = datetime(2024, 1, 25, 20, 5, 32)
-
-    print("today:", today)
-    print("yesterday:", yesterday)
+    yesterday = datetime.now() - timedelta(days=1)
     retriever.add_documents(
-        [
-            Document(
-                page_content="hello world yesterday",
-                metadata={"created_at": yesterday},
-            ),
-            Document(
-                page_content="hello world today",
-                metadata={"created_at": today},
-            ),
-        ]
+        # "hello world" 내용의 문서를 추가하고, 메타데이터에 어제 날짜를 설정합니다.
+        [Document(page_content="hello world", metadata={"last_accessed_at": yesterday})]
     )
     # "hello foo" 내용의 문서를 추가합니다.
+    retriever.add_documents([Document(page_content="hello foo")])
 
     # Hello World는 가장 중요하기 때문에 먼저 반환되며, 감쇠율이 0에 가까워 여전히 최근이기 때문입니다.
-    docs = retriever.invoke("hello world")
+    docs = retriever.get_relevant_documents("hello world")
     print("====== low_rate retriever result ========")
     for i, doc in enumerate(docs):
         print(doc.metadata)
@@ -64,31 +46,18 @@ def high_rate():
     index = faiss.IndexFlatL2(embedding_size)
     vectorstore = FAISS(embeddings_model, index, InMemoryDocstore({}), {})
     retriever = TimeWeightedVectorStoreRetriever(
-        vectorstore=vectorstore, decay_rate=0.999, k=2
+        vectorstore=vectorstore, decay_rate=0.9999999, k=1
     )
 
     yesterday = datetime.now() - timedelta(days=1)
-    today = datetime.now()
-
     retriever.add_documents(
-        [
-            Document(
-                page_content="hello world yesterday",
-                metadata={"last_accessed_at": yesterday},
-            )
-        ]
+        # "hello world" 내용의 문서를 추가하고, 메타데이터에 어제 날짜를 설정합니다.
+        [Document(page_content="hello world", metadata={"last_accessed_at": yesterday})]
     )
     # "hello foo" 내용의 문서를 추가합니다.
-    retriever.add_documents(
-        [
-            Document(
-                page_content="hello world today", metadata={"last_accessed_at": today}
-            )
-        ]
-    )
+    retriever.add_documents([Document(page_content="hello world")])
 
-    # Hello Foo가 먼저 반환됩니다. 왜냐하면 "hello world"가 대부분 잊혀졌기 때문입니다.
-    docs = retriever.invoke("hello world")
+    docs = retriever.get_relevant_documents("hello foo")
     print("====== high_rate retriever result ========")
     for i, doc in enumerate(docs):
         print(doc.metadata)
@@ -97,4 +66,4 @@ def high_rate():
 
 if __name__ == "__main__":
     low_rate()
-    # high_rate()
+    high_rate()
