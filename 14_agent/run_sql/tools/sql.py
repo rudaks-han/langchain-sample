@@ -14,5 +14,5 @@ def run_sqlite_query(query):
 run_query_tool = Tool.from_function(
     name="run_sqlite_query",
     description="Run a sqlite query.",
-    function=run_sqlite_query,
+    func=run_sqlite_query,
 )
