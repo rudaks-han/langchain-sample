@@ -28,7 +28,9 @@ chain = prompt | llm | parser
 
 async def print_result():
     async for chunk in chain.astream({"country": "서울"}):
-        print(chunk, end="\n", flush=True)
+        # print(chunk, end="\n", flush=True)
+        # print(chunk.content)
+        print(chunk)
 
 
 asyncio.run(print_result())

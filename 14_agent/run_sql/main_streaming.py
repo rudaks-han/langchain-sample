@@ -48,9 +48,12 @@ async def print_result(_agent_executor):
     async for chunk in _agent_executor.astream(
         {"input": "How many users are in the database?"}
     ):
-        print("chunk:", chunk)
+        # print("chunk:", chunk)
         # chunks.append(chunk)
         # yield chunk
+        if "output" in chunk:
+            for char in chunk["output"]:
+                print(char, end="\n", flush=True)
 
     # async for chunk in _agent_executor.astream(
     #     {"input": "How many users are in the database?"}
