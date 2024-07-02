@@ -4,7 +4,7 @@ from typing import List
 from langchain.tools import Tool
 from pydantic.v1 import BaseModel
 
-conn = sqlite3.connect("db.sqlite")
+conn = sqlite3.connect("db.sqlite", check_same_thread=False)
 
 
 def list_tables():

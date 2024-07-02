@@ -38,4 +38,7 @@ tools = [run_query_tool, describe_tables_tool]
 agent = create_openai_functions_agent(llm=chat, tools=tools, prompt=prompt)
 agent_executor = AgentExecutor(agent=agent, tools=tools)
 # agent_executor.invoke({"input": "How many users are in the database?"})
-agent_executor.invoke({"input": "How many users have provided a shipping addresses?"})
+response = agent_executor.invoke(
+    {"input": "How many users have provided a shipping addresses?"}
+)
+print(response)
