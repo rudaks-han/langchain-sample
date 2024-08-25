@@ -27,6 +27,7 @@ numpy = "*"
 scipy = "*"
 elasticsearch = "*"
 pyboxen = "*"
+cryptography = "*"
 
 [dev-packages]
 
