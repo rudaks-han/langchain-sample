@@ -8,7 +8,7 @@ load_dotenv()
 llm = ChatOpenAI(
     temperature=0,  # 창의성 (0.0 ~ 2.0)
     model_name="gpt-4o",  # 모델명
-    # streaming=False,
+    streaming=True,
 )
 
 template = "{country}의 수도는?"
@@ -22,7 +22,7 @@ def invoke():
     print(response)
 
 
-# invoke()
+invoke()
 
 
 async def ainvoke():
@@ -35,7 +35,7 @@ async def ainvoke():
 
 def stream():
     for chunk in chain.stream({"country": "서울"}):
-        print(chunk, end="", flush=True)
+        print(chunk)
 
 
 # stream()
@@ -43,12 +43,12 @@ def stream():
 
 async def astream():
     async for chunk in chain.astream({"country": "서울"}):
-        print(chunk, end="", flush=True)
+        print(chunk)
 
 
 # asyncio.run(astream())
 
-# chain = prompt | llm | {"result": StrOutputParser()}
+chain = prompt | llm | {"result": StrOutputParser()}
 
 
 async def astream_json():
