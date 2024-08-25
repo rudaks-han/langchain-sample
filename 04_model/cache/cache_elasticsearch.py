@@ -2,7 +2,6 @@ import time
 from functools import wraps
 
 from dotenv import load_dotenv
-from elasticsearch import Elasticsearch
 from langchain.globals import set_llm_cache
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
@@ -24,10 +23,10 @@ def elapsed_time(func):
     return wrapper
 
 
-es = Elasticsearch(hosts=["http://"])
-
-# ElasticsearchCache 설정
-llm_cache = ElasticsearchCache(client=es, index_name="llm_cache")
+llm_cache = ElasticsearchCache(
+    es_url="http://172.16.120.203:9200",
+    index_name="llm_cache",
+)
 
 set_llm_cache(llm_cache)
 
