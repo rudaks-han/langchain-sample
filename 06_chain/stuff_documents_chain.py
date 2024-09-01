@@ -26,10 +26,8 @@ prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
-from langchain import hub
-
-prompt = hub.pull("teddynote/summary-stuff-documents-korean")
-print(prompt)
+# prompt = hub.pull("teddynote/summary-stuff-documents-korean")
+# print(prompt)
 
 from langchain_community.document_loaders import TextLoader
 
@@ -51,7 +49,7 @@ class MyCallbackHandler(BaseCallbackHandler):
 
 
 llm = ChatOpenAI(
-    model_name="gpt-3.5-turbo",
+    model_name="gpt-4o-mini",
     streaming=True,
     temperature=0.01,
     callbacks=[MyCallbackHandler()],
