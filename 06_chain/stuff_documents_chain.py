@@ -29,7 +29,9 @@ prompt = ChatPromptTemplate.from_messages(
 from langchain import hub
 
 prompt = hub.pull("teddynote/summary-stuff-documents-korean")
+print("______ prompt ______")
 print(prompt)
+print("____________________")
 
 from langchain_community.document_loaders import TextLoader
 
@@ -40,7 +42,7 @@ print("[메타데이터]\n")
 print(docs[0].metadata)
 print("\n========= [앞부분] 미리보기 =========\n")
 print(docs[0].page_content[:500])
-
+print("____________________")
 
 from langchain.callbacks.base import BaseCallbackHandler
 
@@ -51,9 +53,9 @@ class MyCallbackHandler(BaseCallbackHandler):
 
 
 llm = ChatOpenAI(
-    model_name="gpt-3.5-turbo",
+    model_name="gpt-4o-mini",
     streaming=True,
-    temperature=0.01,
+    temperature=0.0,
     callbacks=[MyCallbackHandler()],
 )
 chain = create_stuff_documents_chain(llm, prompt)

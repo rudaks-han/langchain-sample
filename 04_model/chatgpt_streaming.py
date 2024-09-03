@@ -22,7 +22,7 @@ def invoke():
     print(response)
 
 
-invoke()
+# invoke()
 
 
 async def ainvoke():
@@ -38,7 +38,7 @@ def stream():
         print(chunk)
 
 
-# stream()
+stream()
 
 
 async def astream():
