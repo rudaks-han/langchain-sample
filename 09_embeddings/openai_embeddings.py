@@ -5,14 +5,14 @@ from langchain_openai import OpenAIEmbeddings
 load_dotenv()
 # OpenAI의 "text-embedding-3-large" 모델을 사용하여 임베딩을 생성합니다.
 # embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
-# embeddings = OpenAIEmbeddings()
+embeddings = OpenAIEmbeddings()
 #
-# text = "LangChain 임베딩 테스트"
+text = "LangChain 임베딩 테스트"
 
 # query_result = embeddings.embed_query(text)
-# query_result = embeddings.embed_documents(text)
+query_result = embeddings.embed_documents(text)
 
-# print(query_result[0][:3])
+print(query_result[0][:3])
 
 # sentence1 = "안녕하세요? 반갑습니다."
 # sentence2 = "안녕하세요? 반갑습니다!"
@@ -45,16 +45,16 @@ load_dotenv()
 #                 f"[유사도 {similarity(sentence, other_sentence):.4f}] {sentences[i]} \t <=====> \t {sentences[j]}"
 #             )
 
-from langchain.evaluation import load_evaluator
-
-# evaluator = load_evaluator("embedding_distance")
-embeddings = OpenAIEmbeddings()
-evaluator = load_evaluator("pairwise_embedding_distance")
-
-
-# text1 = "안녕하세요~"
-# text2 = "안녕하세요!"
-text1 = "사과가 너무 맛있어"
-text2 = "오늘 비가 온다"
-result = evaluator.evaluate_string_pairs(prediction=text1, prediction_b=text2)
-print(result)
+# from langchain.evaluation import load_evaluator
+#
+# # evaluator = load_evaluator("embedding_distance")
+# embeddings = OpenAIEmbeddings()
+# evaluator = load_evaluator("pairwise_embedding_distance")
+#
+#
+# # text1 = "안녕하세요~"
+# # text2 = "안녕하세요!"
+# text1 = "사과가 너무 맛있어"
+# text2 = "오늘 비가 온다"
+# result = evaluator.evaluate_string_pairs(prediction=text1, prediction_b=text2)
+# print(result)
