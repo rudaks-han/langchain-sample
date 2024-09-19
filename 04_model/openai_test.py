@@ -16,7 +16,8 @@ def streaming():
     )
 
     for chunk in stream:
-        print("chunk", chunk.json())
+        # print("chunk", chunk.json())
+        print(chunk)
         if chunk.choices[0].delta.content is not None:
             print(
                 chunk.choices[0].delta.content,
@@ -37,5 +38,5 @@ def not_streaming():
     print(completion.choices[0].message.content)
 
 
-not_streaming()
-# streaming()
+# not_streaming()
+streaming()
