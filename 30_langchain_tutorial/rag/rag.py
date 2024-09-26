@@ -28,12 +28,18 @@ docs = loader.load()
 # print(docs[0].page_content[:500])
 
 
-text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+text_splitter = RecursiveCharacterTextSplitter(
+    chunk_size=1000, chunk_overlap=200, add_start_index=True
+)
 splits = text_splitter.split_documents(docs)
+
 vectorstore = Chroma.from_documents(documents=splits, embedding=OpenAIEmbeddings())
 
-# Retrieve and generate using the relevant snippets of the blog.
 retriever = vectorstore.as_retriever()
+retrieved_docs = retriever.invoke("한국을 뜨고 싶은 이유가 뭐야?")
+
+print(len(retrieved_docs))
+print(retrieved_docs[0].page_content)
 # prompt = hub.pull("rlm/rag-prompt")
 prompt_template = """You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say that you don't know. Use three sentences maximum and keep the answer concise.
 
