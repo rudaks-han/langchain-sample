@@ -16,7 +16,9 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 loader = WebBaseLoader(
     web_paths=("https://n.news.naver.com/mnews/article/029/0002905111",),
     bs_kwargs=dict(
-        parse_only=bs4.SoupStrainer(class_=("media_end_head_headline", "newsct_body"))
+        parse_only=bs4.SoupStrainer(
+            class_=("media_end_head_headline", "newsct_article _article_body")
+        )
     ),
 )
 docs = loader.load()

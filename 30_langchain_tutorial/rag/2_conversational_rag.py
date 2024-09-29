@@ -21,7 +21,9 @@ llm = ChatOpenAI(model="gpt-4o-mini")
 loader = WebBaseLoader(
     web_paths=("https://n.news.naver.com/mnews/article/029/0002905111",),
     bs_kwargs=dict(
-        parse_only=bs4.SoupStrainer(class_=("media_end_head_headline", "newsct_body"))
+        parse_only=bs4.SoupStrainer(
+            class_=("media_end_head_headline", "newsct_article _article_body")
+        )
     ),
 )
 docs = loader.load()
@@ -68,12 +70,6 @@ qa_prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
-prompt = ChatPromptTemplate.from_messages(
-    [
-        ("system", system_prompt),
-        ("human", "{input}"),
-    ]
-)
 question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
 
 rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
