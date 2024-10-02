@@ -26,7 +26,7 @@ def invoke():
     print(response)
 
 
-# invoke()
+invoke()
 
 
 def stream():
@@ -34,4 +34,4 @@ def stream():
         print(s)
 
 
-stream()
+# stream()
