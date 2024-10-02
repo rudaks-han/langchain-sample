@@ -26,6 +26,8 @@ numpy = "*"
 scipy = "*"
 elasticsearch = "*"
 pyboxen = "*"
+langgraph = "*"
+pandas = "*"
 langchain-upstage = "*"
 
 [dev-packages]
