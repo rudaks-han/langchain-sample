@@ -29,6 +29,7 @@ pyboxen = "*"
 langgraph = "*"
 pandas = "*"
 langchain-upstage = "*"
+langchain-ollama = "*"
 
 [dev-packages]
 
