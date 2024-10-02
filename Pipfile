@@ -30,6 +30,8 @@ langgraph = "*"
 pandas = "*"
 langchain-upstage = "*"
 langchain-ollama = "*"
+langchain-huggingface = "*"
+flashrank = "*"
 
 [dev-packages]
 
