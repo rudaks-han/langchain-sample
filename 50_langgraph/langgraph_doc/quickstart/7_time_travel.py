@@ -8,6 +8,7 @@ from langgraph.constants import END
 from langgraph.graph import StateGraph, START
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
+
 # NOTE: you must use langchain-core >= 0.3 with Pydantic v2
 from pydantic import BaseModel
 from typing_extensions import TypedDict
