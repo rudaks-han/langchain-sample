@@ -1,0 +1,244 @@
+Graphs
+본질적으로, LangGraph는 에이전트 워크플로우를 그래프로 모델링한다. 에이전트의 동작은 세 가지 주요 구성 요소를 사용하여 정의된다.
+
+상태(State): 애플리케이션의 현재 스냅샷을 나타내는 공유 데이터 구조이다. 어떤 Python 유형도 될 수 있지만, 일반적으로는 TypedDict 또는 Pydantic BaseModel이다.
+노드(Nodes): 에이전트의 동작방식을 정의하는 Python 함수이다. 현재 상태를 입력으로 받아 계산이나 부작용을 수행하고 업데이트된 상태를 반환한다.
+엣지(Edges): 현재 상태(State)에 따라 다음에 실행할 노드를 결정하는 Python 함수이다. 조건부 분기 또는 고정적으로 전환될 수 있다.
+
+노드(Nodes)와 엣지(Edges)를 조합하여 시간이 지남에 따라 상태를 발전시키는 복잡한 루프가 있는 워크플로우를 만들 수 있다. 그러나 진정한 가치는 LangGraph가 상태를 관리하는 방식에서 나온다. 강조하자면: 노드와 엣지는 그저 Python 함수일 뿐이다. LLM을 포함할 수도 있고, 단순한 Python 코드일 수도 있다.
+요약하자면: 노드(Nodes)는 작업을 수행하고, 엣지(Edge)는 다음에 할 일을 알려준다.
+LangGraph의 기본 그래프 알고리즘은 일반적인 프로그램을 정의할 때 메시지 전달을 사용한다. 노드가 작업을 완료하면 하나 이상의 엣지를 따라 다른 노드에 메시지를 전송한다. 수신 노드는 자신의 함수를 실행한 후 결과 메시지를 다음 노드로 전달하고 이 과정이 계속된다. Google의 Pregel 시스템에서 영감을 받아 프로그램은 불연속적인 "슈퍼 스텝(super-step)"으로 진행된다.
+슈퍼 스텝은 그래프 노드상에서 하나의 반복(iteration)으로 생각될 수 있다. 병렬로 실행되는 노드는 같은 슈퍼 스텝의 일부이며, 순차적으로 실행되는 노드는 별도의 슈퍼 스텝에 속한다. 그래프 실행 시작 시, 모든 노드는 비활성 상태로 시작한다. 노드는 들어오는 엣지(또는 "채널") 중 하나에서 새 메시지(상태)를 수신하면 활성화된다. 활성화된 노드는 자신의 함수를 실행하고 업데이트로 응답한다. 각 슈퍼 스텝이 끝날 때, 들어오는 메시지가 없는 노드는 자신을 비활성으로 표시하여 중단할 것을 투표한다. 모든 노드가 비활성 상태이고 전송 중인 메시지가 없을 때 그래프 실행이 종료된다.
+StateGraph
+StateGraph 클래스는 주요 그래프 클래스이다. 이는 사용자 정의 상태(State) 객체를 파라미터로 받는다.
+MessageGraph
+MessageGraph 클래스는 특별한 유형의 그래프이다. MessageGraph의 상태(State)는 오직 메시지 목록만을 포함한다. 이 클래스는 대부분의 애플리케이션이 메시지 목록보다 더 복잡한 상태(State)를 요구하기 때문에 챗봇을 제외하고는 거의 사용되지 않는다.
+그래프 컴파일
+그래프를 구축하려면 먼저 상태(State)를 정의한 다음 노드(Nodes)와 엣지(Edge)를 추가하고, 마지막으로 컴파일한다. 그래프를 컴파일하는 것이 정확히 무엇이며, 왜 필요한 걸까?
+컴파일은 꽤 간단한 단계이다. 그래프 구조에 대한 몇 가지 기본 검사를 수행한다(예: 고아(orphaned) 노드 없는지? 등). 또한 체크포인터(checkpointer)와 중단점(breakpoint)과 같은 런타임 인수를 지정할 수 있는 곳이기도 하다. 그래프를 컴파일하려면 .compile 메서드를 호출하면 된다.
+graph = graph_builder.compile(...)
+그래프를 사용하기 전에 반드시 컴파일해야 한다.
+State
+그래프를 정의할 때 가장 먼저 하는 일은 그래프의 상태(State)를 정의하는 것이다. 상태(State)는 그래프의 스키마와 상태에 업데이트를 적용하는 방법을 지정하는 리듀서(reducer) 함수로 구성된다. 상태(State)의 스키마는 그래프의 모든 노드와 엣지에 대한 입력 스키마가 되며, TypedDict 또는 Pydantic 모델일 수 있다. 모든 노드는 상태에 대한 업데이트를 내보내며, 이 업데이트는 지정된 리듀서 함수를 사용하여 적용된다.
+Schema
+그래프의 스키마를 지정하는 주요 문서화된 방법은 TypedDict를 사용하는 것이다. 그러나 기본값과 추가 데이터 검증을 추가하기 위해 Pydantic BaseModel을 그래프 상태로 사용하는 것도 지원한다.
+기본적으로 그래프는 입력 및 출력 스키마가 동일하다. 이를 변경하려면 명시적으로 입력 및 출력 스키마를 직접 지정할 수도 있다. 많은 키가 있고 일부는 입력용이고 다른 일부는 출력용일 때 유용하다. 사용 방법은 여기의 노트를 참조하자.
+여러 개의 schema
+일반적으로 모든 그래프 노드는 하나의 스키마로 통신한다. 이는 노드가 동일한 상태 채널을 읽고 쓸 것임을 의미한다. 하지만, 더 많은 제어가 필요한 경우도 있다.
+
+내부 노드는 그래프의 입력/출력에 필요하지 않은 정보를 전달할 수 있다.
+그래프에 대해 서로 다른 입력/출력 스키마를 사용할 수도 있습니다. 예를 들어, 출력에는 관련된 하나의 출력 키만 포함될 수 있다.
+
+내부 노드 간의 통신을 위해 노드가 그래프 내부의 비공식 상태 채널에 쓸 수 있다. 이를 위해 간단히 비공식 스키마인 PrivateState를 정의할 수 있다. 자세한 내용은 이 노트를 참조하자.
+그래프에 대해 명시적인 입력 및 출력 스키마를 정의하는 것도 가능하다. 이러한 경우, 그래프 작업과 관련된 모든 키를 포함하는 "내부" 스키마를 정의한다. 하지만 입력 및 출력 스키마는 "내부" 스키마의 하위 집합으로 정의하여 그래프의 입력 및 출력을 제한할 수 있다. 자세한 내용은 이 노트를 참조하자.
+예제를 한번 보자.
+from typing import TypedDict
+
+from langgraph.constants import START, END
+from langgraph.graph import StateGraph
+
+
+class InputState(TypedDict):
+    user_input: str
+
+
+class OutputState(TypedDict):
+    graph_output: str
+
+
+class OverallState(TypedDict):
+    foo: str
+    user_input: str
+
+
+class PrivateState(TypedDict):
+    bar: str
+
+
+def node_1(state: InputState) -> OverallState:
+    return {"foo": state["user_input"] + " name"}
+
+
+def node_2(state: OverallState) -> PrivateState:
+    return {"bar": state["foo"] + " is"}
+
+
+def node_3(state: PrivateState) -> OutputState:
+    return {"graph_output": state["bar"] + " Lance"}
+
+
+builder = StateGraph(OverallState, input=InputState, output=OutputState)
+builder.add_node("node_1", node_1)
+builder.add_node("node_2", node_2)
+builder.add_node("node_3", node_3)
+builder.add_edge(START, "node_1")
+builder.add_edge("node_1", "node_2")
+builder.add_edge("node_2", "node_3")
+builder.add_edge("node_3", END)
+
+graph = builder.compile()
+result = graph.invoke({"user_input": "My"})
+print(result)  # {"graph_output": "My name is Lance"}
+여기에서 주목해야 할 두 가지 미묘하고 중요한 점이 있다.
+
+여기서 InputState를 node_1의 InputState로 전달한다. 그러나 OverallState의 채널인 foo에 쓰고 있다. 입력 스키마에 포함되지 않은 상태 채널에 어떻게 쓸 수 있을까? 이는 노드가 그래프 상태의 모든 상태 채널에 쓸 수 있기 때문이다. 그래프 상태는 초기화 시 정의된 상태 채널의 합집합으로, 여기에는 OverallState와 필터인 InputState 및 OutputState가 포함된다.
+그리고 StateGraph(OverallState, input=InputState, output=OutputState)로 그래프를 초기화한다. 그렇다면 node_2에서 PrivateState에 어떻게 쓸 수 있을까? 이 스키마가 StateGraph 초기화 시 전달되지 않았다면 그래프는 어떻게 이 스키마에 접근할 수 있을까? 노드는 상태 스키마 정의가 존재하는 한 추가 상태 채널을 선언할 수 있기 때문에 가능하다. 이 경우 PrivateState 스키마가 정의되어 있으므로, 그래프에 새로운 상태 채널로 bar를 추가하고 여기에 쓸 수 있다.
+
+Reducers
+리듀서는 노드의 업데이트가 상태(State)에 어떻게 적용되는지를 이해하기 위한 핵심 요소이다. 상태(State)의 각 키는 독립적인 리듀서 함수를 가지고 있다. 명시적으로 리듀서 함수가 지정되지 않으면 해당 키에 대한 모든 업데이트가 덮어쓰도록 가정한다. 기본 리듀서 유형을 시작으로 몇 가지 다른 유형의 리듀서가 있다.
+기본 reducer
+이 두 가지 예시는 기본 리듀서를 사용하는 방법을 보여준다.
+예제 A:
+from typing_extensions import TypedDict
+
+class State(TypedDict):
+    foo: int
+    bar: list[str]
+이 예제에서는 어떤 키에도 리듀서 함수가 지정되지 않았다. 그래프에 대한 입력이 {"foo": 1, "bar": ["hi"]}라고 가정해 보자. 그런 다음 첫 번째 노드가 {"foo": 2}를 반환한다고 가정해 보자. 이는 상태에 대한 업데이트로 처리된다. 노드가 전체 상태 스키마를 반환할 필요는 없고, 단지 업데이트만 반환하면 된다. 이 업데이트를 적용한 후, 상태는 {"foo": 2, "bar": ["hi"]}가 된다. 만약 두 번째 노드가 {"bar": ["bye"]}를 반환하면, 상태는 {"foo": 2, "bar": ["bye"]}가 된다.
+예제 B:
+from typing import Annotated
+from typing_extensions import TypedDict
+from operator import add
+
+class State(TypedDict):
+    foo: int
+    bar: Annotated[list[str], add]
+이 예제에서는 두 번째 키(바)에 대해 리듀서 함수(예: operator.add)를 지정하기 위해 Annotated 유형을 사용했다. 첫 번째 키는 변경되지 않았음을 주목하자. 그래프에 대한 입력이 {"foo": 1, "bar": ["hi"]}라고 가정해 보자. 그런 다음 첫 번째 노드가 {"foo": 2}를 반환한다고 가정해 보자. 이는 상태에 대한 업데이트로 처리된다. 노드가 전체 상태 스키마를 반환할 필요는 없고, 단지 업데이트만 반환하면 된다. 이 업데이트를 적용한 후, 상태는 {"foo": 2, "bar": ["hi"]}가 된다. 만약 두 번째 노드가 {"bar": ["bye"]}를 반환하면, 상태는 {"foo": 2, "bar": ["hi", "bye"]}가 된다. 여기서 바 키는 두 리스트를 합쳐서 업데이트되었음을 주목하자.
+Global State에서 Message와 작업하기
+왜 messages를 사용하는가?
+최근 LLM 제공업체는 메시지 목록을 입력으로 받아들이는 채팅 모델 인터페이스를 가지고 있다. LangChain의 ChatModel은 특히 메시지 객체의 목록을 입력으로 받아들인다. 이러한 메시지는 HumanMessage(사용자 입력)나 AIMessage(LLM 응답)와 같은 다양한 형태로 제공된다. 메시지 객체에 대한 자세한 내용을 읽으려면 이 개념 가이드를 참조하자.
+Graph에서 message를 사용하기
+많은 경우에 이전 대화 기록을 메시지 목록으로 그래프 상태에 저장하면 유용하게 사용될 수 있다. 이를 위해 메시지 객체 목록을 저장하는 키(채널)를 그래프 상태에 추가하고 리듀서 함수로 주석을 달 수 있다(아래 예제의 messages 키 참조). 리듀서 함수는 상태 업데이트 시 그래프에 메시지 객체 목록을 어떻게 업데이트할지를 알려주는 데 필수적이다(예: 노드가 업데이트를 보낼 때). 리듀서를 지정하지 않으면 모든 상태 업데이트가 가장 최근에 제공된 값으로 메시지 목록을 덮어쓰게 된다. 기존 목록에 메시지를 단순히 추가하고 싶다면, operator.add를 리듀서로 사용할 수 있다.
+하지만 그래프 상태의 메시지를 수동으로 업데이트하고 싶을 수도 있다(예: 사람이 개입하는 방식(human-in-the-loop)). operator.add를 사용하면 그래프에 보내는 수동 상태 업데이트가 기존 메시지 목록에 추가되고, 기존 메시지를 업데이트하지 않게 된다. 이를 피하려면 메시지 ID를 추적하고 기존 메시지를 업데이트하는 리듀서가 필요하다. 이를 달성하기 위해, 미리 만들어진 add_messages 함수를 사용할 수 있다. 새로운 메시지의 경우 기존 목록에 단순히 추가되지만, 기존 메시지에 대한 업데이트도 올바르게 처리한다.
+serialization
+메시지 ID를 추적하는 것 외에도, add_messages 함수는 메시지 채널에서 상태 업데이트를 수신할 때마다 메시지를 LangChain 메시지 객체로 역직렬화(deserialize)하려고 시도한다. LangChain의 직렬화/역직렬화에 대한 자세한 정보는 여기에서 확인하라. 이를 통해 그래프 입력/상태 업데이트를 다음 형식으로 보낼 수 있다.
+# 지원되는 방법
+{"messages": [HumanMessage(content="message")]}
+
+# 또한 이방법도 지원된다
+{"messages": [{"type": "human", "content": "message"}]}
+add_messages를 사용할 때 상태 업데이트가 항상 LangChain 메시지로 역직렬화되므로, 메시지 속성에 접근할 때 점 표기법을 사용해야 한다. 예를 들어, state["messages"][-1].content와 같이 사용할 수 있다. 아래는 add_messages를 리듀서 함수로 사용하는 그래프의 예이다.
+from langchain_core.messages import AnyMessage
+from langgraph.graph.message import add_messages
+from typing import Annotated
+from typing_extensions import TypedDict
+
+class GraphState(TypedDict):
+    messages: Annotated[list[AnyMessage], add_messages]
+MessagesState
+상태에 메시지 목록이 있는 것은 매우 일반적 패턴이기 때문에, 메시지를 쉽게 사용할 수 있도록 설계된 미리 만들어진 상태인 MessagesState가 존재한다. MessagesState는 AnyMessage 객체의 목록인 단일 messages 키로 정의되며, add_messages 리듀서를 사용한다. 일반적으로 메시지뿐만 아니라 추적해야 할 더 많은 상태가 있기 때문에, 사람들은 이 상태를 서브클래싱하여 다음과 같은 추가 필드를 추가하는 경우가 많다.
+from langgraph.graph import MessagesState
+
+class State(MessagesState):
+    documents: list[str]
+Nodes
+LangGraph에서 노드는 일반적으로 상태를 첫 번째 위치 인자로 받는 파이썬 함수(sync 또는 async)이며, (선택적으로) 두 번째 위치 인자는 선택적 구성 매개변수(예: thread_id)를 포함하는 "config"이다.
+NetworkX와 유사하게, 이러한 노드는 add_node 메서드를 사용하여 그래프에 추가한다.
+from langchain_core.runnables import RunnableConfig
+from langgraph.graph import StateGraph
+
+builder = StateGraph(dict)
+
+
+def my_node(state: dict, config: RunnableConfig):
+    print("In node: ", config["configurable"]["user_id"])
+    return {"results": f"Hello, {state['input']}!"}
+
+
+# 두 번째 인자는 선택사항(optional)
+def my_other_node(state: dict):
+    return state
+
+
+builder.add_node("my_node", my_node)
+builder.add_node("other_node", my_other_node)
+...
+백그라운드에서 함수는 RunnableLambda로 변환되어 배치 및 비동기 지원을 추가하며, 기본적인 추적 및 디버깅 기능도 제공한다.
+이름을 지정하지 않고 그래프에 노드를 추가하면, 함수 이름과 동일한 기본 이름이 자동으로 부여된다.
+builder.add_node(my_node)
+# "my_node"를 참조하여 노드에 엣지를 생성할 수 있다.
+START Node
+START 노드는 사용자 입력을 그래프에 보내는 노드를 나타내는 특별한 노드이다. 이 노드를 참조하는 주된 목적은 어떤 노드를 먼저 호출해야 하는지를 결정하는 것이다.
+from langgraph.graph import START
+
+graph.add_edge(START, "node_a")
+END Node
+END 노드는 마지막 노드를 나타내는 특별한 노드이다. 이 노드는 작업이 완료된 후 어떤 엣지가 추가 동작이 없음을 표시하려고 할 때 참조된다.
+from langgraph.graph import END
+
+graph.add_edge("node_a", END)
+Edges
+엣지(Edges)는 로직(logic)이 어떻게 라우팅되는지와 그래프가 중지하는 방법을 정의한다. 이는 에이전트가 작동하는 방식과 서로 다른 노드가 어떻게 통신하는지를 나타내는 중요한 부분이다. 다음은 몇 가지 주요 엣지(Edges) 유형이다.
+
+일반 엣지 (Normal Edge): 한 노드에서 다음 노드로 직접 연결된다.
+조건부 엣지 (Conditional Edge): 다음으로 갈 노드(s)를 결정하기 위해 함수를 호출한다.
+진입점 (Entry Point): 사용자 입력이 도착할 때 처음 호출할 노드이다.
+조건부 진입점 (Conditional Entry Point): 사용자 입력이 도착할 때 어떤 노드(s)를 먼저 호출할지 결정하기 위해 함수를 호출한다.
+
+노드는 외부로 나가는 여러 개의 엣지(Edges)를 가질 수 있다. 노드에 여러 개의 아웃고잉(outgoing) 엣지가 있는 경우, 모든 목적지 노드는 다음 슈퍼스텝의 일환으로 병렬로 실행된다.
+Normal Edges
+항상 노드 A에서 노드 B로 이동하고 싶다면, add_edge 메서드를 직접 사용할 수 있다.
+graph.add_edge("node_a", "node_b")
+Conditional Edges
+하나 이상의 엣지로 선택적으로 라우팅하거나 선택적으로 종료하려면 add_conditional_edges 메서드를 사용할 수 있다. 이 메서드는 노드의 이름과 해당 노드가 실행된 후 호출할 "라우팅 함수"를 인자로 받는다.
+graph.add_conditional_edges("node_a", routing_function)
+노드와 유사하게, routing_function은 그래프의 현재 상태를 받아 값을 반환한다.
+기본적으로, routing_function의 반환 값은 상태를 다음으로 보낼 노드(또는 노드 목록)의 이름으로 사용된다. 모든 노드는 다음 슈퍼스텝의 일환으로 병렬로 실행된다.
+선택적으로 routing_function의 출력을 다음 노드의 이름에 매핑하는 딕셔너리를 제공할 수 있다.
+graph.add_conditional_edges("node_a", routing_function, {True: "node_b", False: "node_c"})
+Entry Point
+진입점은 그래프가 시작될 때 실행되는 첫 번째 노드(s)이다. 그래프에 진입할 위치를 지정하기 위해 가상 START 노드에서 첫 번째 노드로 실행하는 add_edge 메서드를 사용할 수 있다.
+from langgraph.graph import START
+
+graph.add_edge(START, "node_a")
+Conditional Entry Point
+조건부 진입점을 사용하면 사용자 지정 논리에 따라 다른 노드에서 시작할 수 있다. 이를 위해 가상 START 노드에서 add_conditional_edges를 사용할 수 있다.
+from langgraph.graph import START
+
+graph.add_conditional_edges(START, routing_function)
+선택적으로 routing_function의 출력을 다음 노드의 이름에 매핑하는 딕셔너리를 제공할 수 있다.
+graph.add_conditional_edges(START, routing_function, {True: "node_b", False: "node_c"})
+Send
+기본적으로 노드(Nodes)와 엣지(Edges)는 미리 정의되어 있으며 동일한 공유 상태에서 작동한다. 그러나 정확한 엣지가 없는 경우나 동시에 여러 버전의 상태(State)가 있는 경우가 있을 수 있다. 이러한 경우의 일반적인 예는 맵-리듀스(map-reduce) 디자인 패턴이다. 이 디자인 패턴에서는 첫 번째 노드가 객체 목록을 생성할 수 있으며, 모든 객체에 다른 노드를 적용하고 싶을 수 있다. 객체의 수는 미리 알 수 없을 수 있으며(즉, 엣지의 수를 미리 알 수 없다는 의미), 하류 노드(Node)에 대한 입력 상태(State)는 다르게 설정되어야 한다(생성된 각 객체에 대해 하나씩).
+이 디자인 패턴을 지원하기 위해 LangGraph는 조건부 엣지에서 Send 객체를 반환하는 것을 지원한다. Send는 두 개의 인자를 받습니다: 첫 번째는 노드의 이름이고, 두 번째는 해당 노드에 전달할 상태이다.
+def continue_to_jokes(state: OverallState):
+    return [Send("generate_joke", {"subject": s}) for s in state['subjects']]
+
+graph.add_conditional_edges("node_a", continue_to_jokes)
+Persistence
+LangGraph는 체크포인터를 사용하여 에이전트의 상태에 대한 내장 영속성(persistance)을 제공한다. 체크포인터는 모든 슈퍼스텝에서 그래프 상태의 스냅샷을 저장하여 언제든지 재개할 수 있도록 한다. 이를 통해 사람이 개입하는 상호작용, 메모리 관리, 내결함성과 같은 기능을 지원한다. 실행 후 적절한 가져오기 및 업데이트 메서드를 사용하여 그래프의 상태를 직접 조작할 수도 있다. 자세한 내용은 지속성 개념 가이드를 참조하라.
+Threads
+LangGraph의 스레드는 그래프와 사용자 간의 개별 세션 또는 대화를 나타낸다. 체크포인팅을 사용할 때, 단일 대화의 턴(심지어 단일 그래프 실행 내의 단계)들은 고유한 스레드 ID로 구성된다.
+Storage
+LangGraph는 BaseStore 인터페이스를 통해 내장된 문서 저장소를 제공한다. 체크포인터가 스레드 ID로 상태를 저장하는 것과 달리, 저장소는 데이터를 구성하기 위해 사용자 지정 네임스페이스를 사용한다. 이는 스레드 간 지속성을 가능하게 하여 에이전트가 장기 기억을 유지하고, 과거 상호작용에서 학습하며, 시간에 따라 지식을 축적할 수 있도록 한다. 일반적인 사용 사례로는 사용자 프로필 저장, 지식 기반 구축, 모든 스레드에 걸쳐 글로벌 기본 설정 관리 등이 있다.
+Graph Migrations
+LangGraph는 체크포인터를 사용하여 상태를 추적하는 경우에도 그래프 정의(노드, 엣지 및 상태)의 마이그레이션을 쉽게 처리할 수 있다.
+
+그래프의 끝에 있는 스레드(즉, 중단되지 않은 경우)에서는 그래프의 전체 토폴로지를 변경할 수 있다(즉, 모든 노드와 엣지를 제거, 추가, 이름 변경 등).
+현재 중단된(interrupted) 스레드의 경우, 노드의 이름을 변경하거나 제거하는 것을 제외한 모든 토폴로지 변경을 지원한다.(해당 스레드가 더 이상 존재하지 않는 노드에 들어가려 할 수 있으므로)
+상태를 수정할 때, 키 추가 및 제거에 대해 완전한 이전 및 이후 호환성을 제공한다.
+이름이 변경된 상태 키는 기존 스레드에서 저장된 상태를 잃는다.
+호환되지 않는 방식으로 타입이 변경된 상태 키는 변경 이전의 상태를 가진 스레드에서 문제가 발생할 수 있다.
+
+Configuration
+그래프를 생성할 때 그래프의 특정 부분을 configurable으로 나타낼 수도 있다. 이는 일반적으로 모델이나 시스템 프롬프트 간에 쉽게 전환할 수 있도록 하기 위해 수행된다. 이를 통해 단일 "인지 아키텍처"(그래프)를 생성하되, 그 인스턴스를 여러 개 만들 수 있다.
+그래프를 생성할 때 선택적으로 config_schema를 지정할 수 있다.
+class ConfigSchema(TypedDict):
+    llm: str
+
+graph = StateGraph(State, config_schema=ConfigSchema)
+그런 다음 이 구성을 configurable config 필드를 사용하여 그래프에 전달할 수 있다.
+config = {"configurable": {"llm": "anthropic"}}
+
+graph.invoke(inputs, config=config)
+그런 다음 노드 내에서 이 구성을 접근하고 사용할 수 있다.
+def node_a(state, config):
+    llm_type = config.get("configurable", {}).get("llm", "openai")
+    llm = get_llm(llm_type)
+    ...
+구성에 대한 전체 설명은 이 가이드를 참조하라.
+Recursion Limit
+재귀(recursion) 제한은 그래프가 단일 실행 동안 실행할 수 있는 최대 슈퍼스텝 수를 설정한다. 제한에 도달하면 LangGraph는 GraphRecursionError를 발생시킨다. 기본값으로 25단계로 설정되어 있다. 재귀 제한은 런타임에 모든 그래프에서 설정할 수 있으며, config 딕셔너리를 통해 .invoke/.stream에 전달된다. 중요한 점은 recursion_limit이 독립적인 구성 키이며, 다른 사용자 정의 구성과 같이 configurable 키 내부에 전달되어서는 안 된다는 것이다. 아래 예제를 참조하라.
+graph.invoke(inputs, config={"recursion_limit": 5, "configurable":{"llm": "anthropic"}})
+재귀 제한이 작동하는 방식에 대해 더 알아보려면 이 방법 안내서를 읽어보자.
+출처: https://rudaks.tistory.com/entry/번역langgraph-Contextual-Guides-LangGraph-Glossary [[루닥스 블로그] 연습만이 살길이다:티스토리]

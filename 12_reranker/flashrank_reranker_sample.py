@@ -17,20 +17,24 @@ load_dotenv()
 
 embedding_model = OpenAIEmbeddings()
 vector_store = Chroma.from_documents(get_sample_docs(), embedding_model)
+# retriever = vector_store.as_retriever(search_kwargs={"k": 10})
 retriever = vector_store.as_retriever(search_kwargs={"k": 10})
 
 query = "대한민국의 수도는?"
 
-retrieved_docs = retriever.get_relevant_documents(query)
+retrieved_docs = retriever.invoke(query)
 print("###### retrieved docs ######")
 pretty_print_docs(retrieved_docs)
 
 
 @elapsed_time
 def flash_rank_rerank():
-    compressor = FlashrankRerank(model="ms-marco-MultiBERT-L-12")
+    compressor = FlashrankRerank(model="ms-marco-MultiBERT-L-12", top_n=10)
+    # compressor = FlashrankRerank(model="ms-marco-MiniLM-L-12-v2", top_n=10)
+    # compressor = FlashrankRerank(top_n=10)
     compression_retriever = ContextualCompressionRetriever(
-        base_compressor=compressor, base_retriever=retriever
+        base_compressor=compressor,
+        base_retriever=retriever,
     )
     compressed_docs = compression_retriever.invoke(query)
 
@@ -51,4 +55,4 @@ def rerank_request():
     pretty_print_texts(results)
 
 
-rerank_request()
+# rerank_request()

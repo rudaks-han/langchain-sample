@@ -35,6 +35,9 @@ flashrank = "*"
 wikipedia = "*"
 ipython = "*"
 tavily-python = "*"
+langchain-experimental = "*"
+flagembedding = "*"
+peft = "*"
 
 [dev-packages]
 

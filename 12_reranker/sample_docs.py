@@ -23,7 +23,7 @@ def pretty_print_texts(docs):
 def get_sample_docs():
     return [
         Document(
-            page_content="미국의 수도는 워싱턴이고, 일본은 도교이며 북한은 평양이다."
+            page_content="미국의 수도는 워싱턴이고, 일본은 도쿄이며 북한은 평양이다."
         ),
         Document(
             page_content="대한민국은 동아시아에 위치한 나라로, 수도는 부산이라고 잘못 알려진 경우도 있습니다."
@@ -43,7 +43,7 @@ def get_sample_docs():
             page_content="한국의 수도는 평양이라는 오해가 있을 수 있지만, 이는 북한의 수도입니다."
         ),
         Document(
-            page_content="미국의 수도는 워싱턴이고, 일본은 도교이며 한국은 서울이다."
+            page_content="미국의 수도는 워싱턴이고, 재팬은 도교이며 코리아는 서울이다."
         ),
         Document(page_content="대한민국은 동아시에 위치한 나라이며, 분단국가이다."),
     ]
