@@ -6,8 +6,8 @@ load_dotenv()
 
 tool = TavilySearchResults(max_results=2)
 tools = [tool]
-result = tool.invoke("What's a 'node' in LangGraph?")
-print(result)
+# result = tool.invoke("What's a 'node' in LangGraph?")
+# print(result)
 
 from typing import Annotated
 from langchain_openai import ChatOpenAI
@@ -34,35 +34,6 @@ def chatbot(state: State):
 
 graph_builder.add_node("chatbot", chatbot)
 
-
-class BasicToolNode:
-    """A node that runs the tools requested in the last AIMessage."""
-
-    def __init__(self, tools: list) -> None:
-        self.tools_by_name = {tool.name: tool for tool in tools}
-
-    def __call__(self, inputs: dict):
-        if messages := inputs.get("messages", []):
-            message = messages[-1]
-        else:
-            raise ValueError("No message found in input")
-        outputs = []
-        for tool_call in message.tool_calls:
-            tool_result = self.tools_by_name[tool_call["name"]].invoke(
-                tool_call["args"]
-            )
-            outputs.append(
-                ToolMessage(
-                    content=json.dumps(tool_result),
-                    name=tool_call["name"],
-                    tool_call_id=tool_call["id"],
-                )
-            )
-        return {"messages": outputs}
-
-
-tool_node = BasicToolNode(tools=[tool])
-graph_builder.add_node("tools", tool_node)
 
 import json
 
@@ -103,8 +74,7 @@ def route_tools(
     state: State,
 ):
     """
-    Use in the conditional_edge to route to the ToolNode if the last message
-    has tool calls. Otherwise, route to the end.
+    마지막 메시지에 도구 호출이 있으면 ToolNode로 라우팅하기 위해 conditional_edge에서 사용한다. 그렇지 않으면 종료로 라우팅한다.
     """
     if isinstance(state, list):
         ai_message = state[-1]
@@ -117,19 +87,16 @@ def route_tools(
     return END
 
 
-# The `tools_condition` function returns "tools" if the chatbot asks to use a tool, and "END" if
-# it is fine directly responding. This conditional routing defines the main agent loop.
+# tools_condition 함수는 챗봇이 도구를 사용해야 하는지 여부를 판단하여, 도구를 사용해야 할 때는 "tools"를 반환하고, 직접 응답해도 될 때는 "END"를 반환한다.
+# 이 조건부 라우팅은 메인 에이전트 루프를 정의한다.
 graph_builder.add_conditional_edges(
     "chatbot",
     route_tools,
-    # The following dictionary lets you tell the graph to interpret the condition's outputs as a specific node
-    # It defaults to the identity function, but if you
-    # want to use a node named something else apart from "tools",
-    # You can update the value of the dictionary to something else
-    # e.g., "tools": "my_tools"
-    {"tools": "tools", END: END},
+    # 다음 dict는 그래프에 조건의 출력을 특정 노드로 해석하도록 지시할 수 있다.
+    # 기본적으로는 identity 함수로 설정되지만, "tools" 이외의 다른 이름을 가진 노드를 사용하려면 dict 값을 변경할 수 있다.
+    # 예: "tools": "my_tools"    {"tools": "tools", END: END},
 )
-# Any time a tool is called, we return to the chatbot to decide the next step
+# 도구가 호출될 때마다 우리는 다음 단계를 결정하기 위해 다시 챗봇으로 돌아간다.
 graph_builder.add_edge("tools", "chatbot")
 graph_builder.add_edge(START, "chatbot")
 graph = graph_builder.compile()
@@ -147,3 +114,25 @@ try:
 except Exception:
     # This requires some extra dependencies and is optional
     pass
+
+
+def stream_graph_updates(user_input: str):
+    for event in graph.stream({"messages": [("user", user_input)]}):
+        for value in event.values():
+            print("Assistant:", value["messages"][-1].content)
+
+
+while True:
+    try:
+        user_input = input("User: ")
+        if user_input.lower() in ["quit", "exit", "q"]:
+            print("Goodbye!")
+            break
+
+        stream_graph_updates(user_input)
+    except:
+        # fallback if input() is not available
+        user_input = "What do you know about LangGraph?"
+        print("User: " + user_input)
+        stream_graph_updates(user_input)
+        break

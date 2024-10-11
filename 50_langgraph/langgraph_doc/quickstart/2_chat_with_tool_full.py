@@ -1,45 +1,46 @@
 from typing import Annotated
 
 from dotenv import load_dotenv
+from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_openai import ChatOpenAI
-from langgraph.graph import StateGraph, START, END
+from langgraph.graph import StateGraph
 from langgraph.graph.message import add_messages
+from langgraph.prebuilt import ToolNode, tools_condition
 from typing_extensions import TypedDict
 
 load_dotenv()
 
-import logging
-
-logging.basicConfig(level=logging.DEBUG)
-
 
 class State(TypedDict):
-    # Messages는 list 타입을 가진다. add_messages 함수는 이 상태 키가 어떻게 업데이트되어야 하는지 정의한다.
     messages: Annotated[list, add_messages]
 
 
 graph_builder = StateGraph(State)
 
+
+tool = TavilySearchResults(max_results=2)
+tools = [tool]
 llm = ChatOpenAI(model="gpt-3.5-turbo")
+llm_with_tools = llm.bind_tools(tools)
 
 
 def chatbot(state: State):
-    return {"messages": [llm.invoke(state["messages"])]}
+    return {"messages": [llm_with_tools.invoke(state["messages"])]}
 
 
 graph_builder.add_node("chatbot", chatbot)
 
-graph_builder.add_edge(START, "chatbot")
-graph_builder.add_edge("chatbot", END)
+tool_node = ToolNode(tools=[tool])
+graph_builder.add_node("tools", tool_node)
+
+graph_builder.add_conditional_edges(
+    "chatbot",
+    tools_condition,
+)
+# Any time a tool is called, we return to the chatbot to decide the next step
+graph_builder.add_edge("tools", "chatbot")
+graph_builder.set_entry_point("chatbot")
 graph = graph_builder.compile()
-
-from IPython.display import Image, display
-
-try:
-    display(Image(graph.get_graph().draw_mermaid_png(output_file_path="./chatbot.png")))
-except Exception:
-    # This requires some extra dependencies and is optional
-    pass
 
 
 def stream_graph_updates(user_input: str):
