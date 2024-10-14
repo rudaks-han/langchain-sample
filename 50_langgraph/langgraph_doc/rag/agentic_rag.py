@@ -319,9 +319,9 @@ import pprint
 inputs = {
     "messages": [
         # ("user", "LCEL의 특징에 대해 알려줘"),
-        # ("user", "langchain 청킹방법"),
-        # ("user", "오늘 날씨 어때?"),
-        ("user", "langchain은 누가 만들었어?"),
+        # ("user", "langchain 청킹"), # rewrite
+        ("user", "한국의 수도는?"),
+        # ("user", "langchain의 개념은 뭐야?"),  # tool_calls
     ]
 }
 
