@@ -19,7 +19,8 @@ def pretty_print_docs(docs):
 
 
 # loader = TextLoader("data/semantic_sample.txt")
-loader = TextLoader("data/sis_sample.txt")
+# loader = TextLoader("data/sis_sample.txt")
+loader = TextLoader("data/news.txt")
 document = loader.load()
 
 
@@ -41,6 +42,15 @@ def recursive_character_text_splitter():
     pretty_print_docs(docs)
 
 
+def recursive_character_text_splitter_from_tiktoken_encoder():
+    text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+        chunk_size=100, chunk_overlap=20
+    )
+    docs = text_splitter.split_documents(document)
+    print("############# RecursiveCharacterTextSplitterTiktokenEncoder #############")
+    pretty_print_docs(docs)
+
+
 def semantic_chunker():
     text_splitter = SemanticChunker(
         OpenAIEmbeddings(),
@@ -53,5 +63,6 @@ def semantic_chunker():
 
 
 # character_text_splitter()
-# recursive_character_text_splitter()
-semantic_chunker()
+recursive_character_text_splitter()
+recursive_character_text_splitter_from_tiktoken_encoder()
+# semantic_chunker()
