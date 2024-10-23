@@ -11,18 +11,20 @@ embeddings = OpenAIEmbeddings()
 
 
 vector_store = ElasticsearchStore(
-    es_url="",
-    es_user="",
-    es_password="",
+    es_url="http://172.16.110.139:9200",
+    es_user="elastic",
+    es_password="tmvprxmfk00",
     query_field="content",
     index_name="attic_aiadapter_bot_data",
     embedding=OpenAIEmbeddings(model="text-embedding-3-small"),
-    strategy=ElasticsearchStore.ExactRetrievalStrategy(),
+    # strategy=ElasticsearchStore.ExactRetrievalStrategy(),
+    strategy=ElasticsearchStore.ApproxRetrievalStrategy(),
     distance_strategy="COSINE",
 )
 
 retriever = vector_store.as_retriever(
-    # search_type="mmr",
+    # search_type="similarity_score_threshold",
+    search_type="mmr",
     search_kwargs={"score_threshold": 0.8},
 )
 
