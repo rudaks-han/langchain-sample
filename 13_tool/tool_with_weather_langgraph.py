@@ -28,4 +28,4 @@ query = "서울의 날씨는?"
 result = tool_node.invoke({"messages": [llm_with_tools.invoke(query)]})
 # "content='서울의 날씨는 맑음입니다.' name='get_weather' tool_call_id='call_IiUh7hfriCkGIU8U55fpyWe1'"
 # {'messages': [ToolMessage(content='서울의 날씨는 맑음입니다.', name='get_weather', tool_call_id='call_IiUh7hfriCkGIU8U55fpyWe1')]}
-print(result.content)
+print(result)
