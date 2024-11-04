@@ -1,122 +1,95 @@
 [티켓 정보]
-- Ticket ID: TCKT0000171161
-- 상담사 이름: 백기환
-- 티켓 상태: 상담완료
-- 접수 일자: 2024-09-27 14:29:13
+- Ticket ID: TCKT0000170434
+- 상담사 이름: 김민철
+- 접수 일자: 2024-07-29 12:00:11
 
 [질문 정보]
-- 고객사명: AIG손해보험
-- 질문 제목: Re: [AIG손해보험] ECC SW의 Log4j 사용 여부 문의
+- 고객사명: CJ대한통운
+- 제목: Re: [CJ대한통운] 챗봇-심화채팅 연결 오류 관련
 
-[질문 내용]
+[질문 내용] 안녕하세요 와이즈넛 조진욱입니다.
 
-안녕하세요, AIG손해보험 윤회인입니다.
+핸드폰을 확인결과 금일 스펙트라로부터 별도로 연락 받은 내용은 없었습니다.
 
-하기 메일 확인 후 회신 부탁드립니다.
-Log4j 버전으로 인한 취약점이 있어 운영 정기 반영이 불가한 상황으로 빠른 확인을 요청드립니다.
+또한 운영서버의 작업에 대해서는 별도로 진행 된 내용은 없습니다.
 
+금칙어 및 이미지의 경우 작업이 진행중이며 31일 오전 최종 테스트 요청 후 18시 이후 일괄 반영 예정입니다.
 
-감사합니다.
-Best regards,
+운영 반영 일정 참고 부탁드립니다.
 
-HoiIn Yoon (윤회인)
-AIG Korea
-Solution Architect
-Digital & Data | IT
+[@스펙트라 기술지원센터](mailto:enomix@spectrahelp.com)어떠한 오류가 발생되었는지 공유 부탁드립니다.조진욱 드림
 
-26 Floor, Two IFC, 10 Gukjegeumyung-ro, Youngdeungpo-gu, Seoul 07326 Korea
+2024년 7월 29일 (월) 오전 11:06, 권진아님 <[jinah.kwon@cj.net](mailto:jinah.kwon@cj.net)>님이 작성:
+안녕하세요. CJ대한통운 권진아입니다.
 
-Tel +82 2 2260 6958
-[Hoiin.Yoon@aig.com](mailto:Hoiin.Yoon@aig.com) | [www.aig.co.kr](http://www.aig.co.kr/)
+금일 오전부터 챗봇->심화채팅 운영단 호출 시 오류가 나고 있다고 프록시 설정 등 확인이 필요할 것 같아
+스펙트라 김민철님께서 조진욱님께 연락 주신 것으로 알고 있는데 연락이 되지 않아
+저한테 혹시 작업 내용이 있었는지 확인차 연락 주셨습니다. (제가 금일 운영단 작업 내용은 전달 받은 것 없다고 회신드림)
 
+관련해서 조진욱님이 연락되지 않으면 대체자가 없는지 확인요청드리며,
+관련 오류가 무엇인지? 조치는 어떻게 이루어질지 와이즈넛-스펙트라 담당자 간 소통하시고 정리해서 대한통운에 공유해주세요.
 
-From: Yoon, Hoiin
-Sent: Monday, September 23, 2024 2:37 PM
-To: 'enomix@spectrahelp.com'
-Cc: 'jhjung@spectra.co.kr' ; Lee, Joo Sun(IT)
-Subject: [AIG손해보험] ECC SW의 Log4j 사용여부문의
+마지막으로, 심화채팅 운영 오픈이 7/31 예정되어 있는 상황으로 (챗봇 화면에서 금칙어 입력,이모티콘/첨부파일 전송 오류)
+1) 익일까지 개발단에 언제 배포해서 2) 어떻게 테스트할 것이며, 3) 7/31 운영단 배포는 언제할지 등
+상세 계획 공유 요청드립니다.
 
-안녕하세요, AIG손해보험 윤회인입니다.
-
-ECC가 있는 AP와 Gateway서버에서 Log4j 1.x 버전으로 인한 취약점이 발견되었습니다.
-솔루션에서 Log4j를 사용하는지 여부를 확인 후,
-사용하지 않으면 삭제를, 사용한다면 Log4j 2.x버전을 설치를 요청 드리고자 합니다.
-
-ECC 솔루션에서 Log4j사용 여부 문의드립니다.
-
+확인 후 회신 요청드립니다.
 
 감사합니다.
-Best regards,
 
-HoiIn Yoon (윤회인)
-AIG Korea
-Solution Architect
-Digital & Data | IT
+권진아  Kwon Jinah
+CJ대한통운 I O-NE IT팀
+TEL 02-700-0366 I  MOBILE 010-2734-2656
+E-MAIL jinah.kwon@cj.net
+ADDRESS  (우) 03157 서울특별시 종로구 종로5길 7 (청진동,Tower 8)
+WE DESIGN LOGISTICS
+|  |  |  |
+| --- | --- | --- |
+|  |
 
-26 Floor, Two IFC, 10 Gukjegeumyung-ro, Youngdeungpo-gu, Seoul 07326 Korea
-
-Tel +82 2 2260 6958
-[Hoiin.Yoon@aig.com](mailto:Hoiin.Yoon@aig.com) | [www.aig.co.kr](http://www.aig.co.kr/)
-
- IMPORTANT NOTICE:
-The information in this email (and any attachments) is confidential. If you are not the intended recipient, you must not use or disseminate the information. If you have received this email in error, please immediately notify me by "Reply" command and permanently delete the original and any copies or printouts thereof. Although this email and any attachments are believed to be free of any virus or other defect that might affect any computer system into which it is received and opened, it is the responsibility of the recipient to ensure that it is virus free and no responsibility is accepted by American International Group, Inc. or its subsidiaries or affiliates either jointly or severally, for any loss or damage arising in any way from its use.
-
+--
+|  |
+| --- |
+| 조진욱 차장
+|
+X-Biz사업본부/ 기술지원부 / 기술지원3팀 팀장
+TEL
+|  FAX.
+02-3404-6109
+Mobile.
+010-8342-8262
+|  E-mail.
+gogomic001@wisenut.co.kr
+경기
+도
+성남
+시
+분당구
+대왕
+판교
+로
+644번길 49 DTC타워(1관) 5,6층 |
+| 상기 메일은 지정된 수신인만을 위한 것이며, 부정경쟁방지 및 영업비밀의 보호에 관한 법률을 포함하여 관계 법령에 따라 보호의 대상이 되는 영업비밀, 기밀정보 등을 포함하고 있을 수 있습니다. 본 문서에 포함된 정보의 전부 또는 일부를 무단으 로 제3자에게 공개, 배포, 복사 또는 사용하는 것은 엄격히 금지됩니다. |
 
 [답변 내용]
-
 - 처리이력 1
 처리상태: 전달완료
-처리시간: 2024-09-27 14:54:11
-상담사: 백기환
+처리시간: 2024-07-29 12:20:29
+상담사: 김민철
 
 
 - 처리이력 2
-처리상태: 중간회신
-처리시간: 2024-09-27 15:54:10
-상담사: 백기환
-제목: [스펙트라기술지원센터]Re: [AIG손해보험] ECC SW의 Log4j 사용 여부 문의
-답변 내용:
-
-안녕하세요. 스펙트라 기술지원센터입니다.
-
-
-회신이 늦은 점 죄송합니다.
-현재 AIG손해보험에 설치되어 있는 ECC버전은 오래전에 설치 된 버전으로 예상됩니다.
-log4j 버전을 1.x.x > 2.x.x으로 단순 업그레이드 시 현재 시스템이 문제가 없는지 와 log4j의 버전을 올렸을 시 어떤 문제가 있는지  확인 중에 있습니다.
-최대한 따른 시일내에 검토 후 회신 드리겠습니다.
-
-
-더 궁금하신 사항이 있으시면 언제든지 문의주세요.
-감사합니다.
-
-
-
-
-- 처리이력 3
 처리상태: 답변완료
-처리시간: 2024-10-04 07:37:11
-상담사: 백기환
-제목: [스펙트라기술지원센터]Re: [AIG손해보험] ECC SW의 Log4j 사용 여부 문의
+처리시간: 2024-07-29 14:20:10
+상담사: 김민철
+참조: ymstella0128@wisenut.co.kr;seongjin.kim1@cj.net;joohun.jung@cj.net;mikyung.kim1@cj.net;parcelit@cjintra.net;jsig55@wisenut.co.kr;igumi@wisenut.co.kr;jinah.kwon@cj.net;
+제목: [스펙트라기술지원센터]Re: [CJ대한통운] 챗봇-심화채팅 연결 오류 관련
 답변 내용:
 
-안녕하세요. 스펙트라 기술지원센터입니다.
+안녕하세요. 스펙트라 기술지원센터 김민철입니다.
 
+조진욱 차장님과 통화 후 조치 및 확인사항 전달드립니다.
+금일 운영서버 내 와이즈넛 측 수정사항은 없었으며, 요청드린 대로 /app/wisenut/ichat_v25/interface/webapps/WEB-INF/web.xml 수정 조치를 해주셨으나, 동일한 문제가 발생하여 챗봇 설정과는 무관한 것으로 확인하였습니다.
+현재는 API 통신에 이상이 없는 것으로 보아 현 운영에는 문제가 없었으나, 스펙트라 사내 네트워크 문제로 인해 API 통신이 불가능한 것으로 착각하여 확인 요청을 드리게 됐습니다.
 
-회신이 늦은 점 죄송합니다.
-현재 AIG손해보험에 설치되어 있는 ECC버전은 오래전에 설치 된 버전으로 예상됩니다.
-log4j 버전을 1.x.x > 2.x.x으로 단순 업그레이드 시 현재 시스템이 문제가 없는지 와 log4j의 버전을 올렸을 시 어떤 문제가 있는지  확인 중에 있습니다.
-최대한 따른 시일내에 검토 후 회신 드리겠습니다.
-
-
-더 궁금하신 사항이 있으시면 언제든지 문의주세요.
-감사합니다.
-
-
-
-
-
-----
-[업무 로그]
-- 로그 1: 2024-09-27 15:10:59 백기환
-과거? 약 3년전에 log4j 1.x.x 버전 관련하여 문제가 있었는데 AIG는 왜 업그레이드를 안했을까?
-
+착오로 인해 업무 진행에 혼선을 드려 죄송합니다.

@@ -1,4 +1,5 @@
 from dotenv import load_dotenv
+from flashrank import Ranker
 from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
 
@@ -38,7 +39,10 @@ from langchain_openai import ChatOpenAI
 
 llm = ChatOpenAI(temperature=0)
 formatted_data = [{"text": doc.page_content} for doc in docs]
-compressor = FlashrankRerank(model="ms-marco-MultiBERT-L-12")
+# compressor = FlashrankRerank(model="ms-marco-MultiBERT-L-12")
+ranker = Ranker(model_name="ms-marco-MultiBERT-L-12", cache_dir=".")
+compressor = FlashrankRerank(client=ranker, top_n=5)
+
 compression_retriever = ContextualCompressionRetriever(
     base_compressor=compressor, base_retriever=retriever
 )
