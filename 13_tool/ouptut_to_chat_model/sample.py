@@ -30,7 +30,7 @@ messages = [HumanMessage(query)]
 
 ai_msg = llm_with_tools.invoke(messages)
 
-print(ai_msg.tool_calls)
+print(f"ai_msg.tool_calls: {ai_msg.tool_calls}")
 
 messages.append(ai_msg)
 
@@ -39,7 +39,7 @@ for tool_call in ai_msg.tool_calls:
     tool_msg = selected_tool.invoke(tool_call)
     messages.append(tool_msg)
 
-print(messages)
+print(f"selected_tool.invoke: {messages}")
 #
 result = llm_with_tools.invoke(messages)
-print(result)
+print(f"llm_with_tools.invoke: {result}")
