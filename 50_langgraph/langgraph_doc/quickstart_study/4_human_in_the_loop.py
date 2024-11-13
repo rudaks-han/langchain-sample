@@ -51,9 +51,9 @@ graph = graph_builder.compile(
     # interrupt_after=["tools"]
 )
 
-user_input = "I'm learning LangGraph. Could you do some research on it for me?"
+# user_input = "I'm learning LangGraph. Could you do some research on it for me?"
+user_input = "지금 LangGraph를 공부하고 있어. LangGraph에 대해 찾아줄 수 있어?"
 config = {"configurable": {"thread_id": "1"}}
-# The config is the **second positional argument** to stream() or invoke()!
 events = graph.stream(
     {"messages": [("user", user_input)]}, config, stream_mode="values"
 )
