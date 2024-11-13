@@ -29,8 +29,8 @@ pretty_print_docs(retrieved_docs)
 
 @elapsed_time
 def flash_rank_rerank():
-    compressor = FlashrankRerank(model="ms-marco-MultiBERT-L-12", top_n=10)
-    # compressor = FlashrankRerank(model="ms-marco-MiniLM-L-12-v2", top_n=10)
+    # compressor = FlashrankRerank(model="ms-marco-MultiBERT-L-12", top_n=10)
+    compressor = FlashrankRerank(model="ms-marco-MiniLM-L-12-v2", top_n=10)
     # compressor = FlashrankRerank(top_n=10)
     compression_retriever = ContextualCompressionRetriever(
         base_compressor=compressor,

@@ -50,7 +50,7 @@ def semantic_chunker_percentile():
     text_splitter = SemanticChunker(
         embedding,
         breakpoint_threshold_type="percentile",
-        breakpoint_threshold_amount=95,
+        breakpoint_threshold_amount=99,
     )
     docs = text_splitter.create_documents([format_docs(document)])
     print("############# SemanticChunker percentile #############")

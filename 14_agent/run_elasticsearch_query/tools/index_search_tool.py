@@ -35,7 +35,7 @@ def elastic_search(
 ):
     """Executes a specific query on an ElasticSearch index and returns all hits or aggregation results"""
     size = min(cfg.elastic_index_data_max_size, size)
-    encoding = tiktoken.encoding_for_model(cfg.model)
+    encoding = tiktoken.encoding_for_model(cfg._model_name)
     try:
         full_dict: dict = json.loads(query)
         query_dict = None
