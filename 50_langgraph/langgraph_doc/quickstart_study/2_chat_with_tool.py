@@ -39,7 +39,7 @@ from langchain_core.messages import ToolMessage
 
 
 class BasicToolNode:
-    """A node that runs the tools requested in the last AIMessage."""
+    """마지막 AI 메시지에서 요청된 도구를 실행하는 노드"""
 
     def __init__(self, tools: list) -> None:
         self.tools_by_name = {tool.name: tool for tool in tools}

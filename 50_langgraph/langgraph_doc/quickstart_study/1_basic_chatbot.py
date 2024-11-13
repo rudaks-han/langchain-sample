@@ -1,4 +1,3 @@
-import json
 from typing import Annotated
 
 from dotenv import load_dotenv

@@ -46,7 +46,7 @@ graph = graph_builder.compile(checkpointer=memory)
 
 config = {"configurable": {"thread_id": "1"}}
 
-user_input = "Hi there! My name is Will."
+user_input = "안녕, 내 이름은 홍길동이야."
 
 # The config is the **second positional argument** to stream() or invoke()!
 events = graph.stream(
@@ -55,7 +55,7 @@ events = graph.stream(
 for event in events:
     event["messages"][-1].pretty_print()
 
-user_input = "Remember my name?"
+user_input = "내 이름 기억하니?"
 
 # The config is the **second positional argument** to stream() or invoke()!
 events = graph.stream(
