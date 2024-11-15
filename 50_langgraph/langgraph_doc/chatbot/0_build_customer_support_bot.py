@@ -1,21 +1,20 @@
 import os
 import shutil
-import sqlite3
 
 import pandas as pd
 import requests
 
 db_url = "https://storage.googleapis.com/benchmarks-artifacts/travel-db/travel2.sqlite"
 local_file = "travel2.sqlite"
-# The backup lets us restart for each tutorial section
+# 백업파일은 각 튜토리얼을 다시 시작할 수 있게 한다.
 backup_file = "travel2.backup.sqlite"
 overwrite = False
 if overwrite or not os.path.exists(local_file):
     response = requests.get(db_url)
-    response.raise_for_status()  # Ensure the request was successful
+    response.raise_for_status()
     with open(local_file, "wb") as f:
         f.write(response.content)
-    # Backup - we will use this to "reset" our DB in each section
+    # Backup - 각 섹션에서 DB를 reset할 때 사용한다.
     shutil.copy(local_file, backup_file)
 
 
@@ -144,16 +143,16 @@ def fetch_user_flight_information(config: RunnableConfig) -> list[dict]:
     cursor = conn.cursor()
 
     query = """
-    SELECT 
+    SELECT
         t.ticket_no, t.book_ref,
         f.flight_id, f.flight_no, f.departure_airport, f.arrival_airport, f.scheduled_departure, f.scheduled_arrival,
         bp.seat_no, tf.fare_conditions
-    FROM 
+    FROM
         tickets t
         JOIN ticket_flights tf ON t.ticket_no = tf.ticket_no
         JOIN flights f ON tf.flight_id = f.flight_id
         JOIN boarding_passes bp ON bp.ticket_no = t.ticket_no AND bp.flight_id = f.flight_id
-    WHERE 
+    WHERE
         t.passenger_id = ?
     """
     cursor.execute(query, (passenger_id,))
@@ -847,7 +846,7 @@ part_1_tools = [
 part_1_assistant_runnable = primary_assistant_prompt | llm.bind_tools(part_1_tools)
 
 from langgraph.checkpoint.memory import MemorySaver
-from langgraph.graph import END, StateGraph, START
+from langgraph.graph import StateGraph, START
 from langgraph.prebuilt import tools_condition
 
 builder = StateGraph(State)
@@ -883,7 +882,6 @@ except Exception:
     # This requires some extra dependencies and is optional
     pass
 
-import shutil
 import uuid
 
 # Let's create an example conversation a user might have with the assistant
