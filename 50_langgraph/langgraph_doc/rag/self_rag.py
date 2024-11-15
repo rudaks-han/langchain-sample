@@ -7,7 +7,7 @@ from langchain_openai import OpenAIEmbeddings
 load_dotenv()
 
 urls = [
-    "https://rudaks.tistory.com/entry/langchain-Conceptual-guide",
+    "https://namu.wiki/w/%EC%95%BC%EA%B5%AC/%EA%B2%BD%EA%B8%B0%20%EB%B0%A9%EC%8B%9D"  # 야구/경기 방식
 ]
 
 docs = [WebBaseLoader(url).load() for url in urls]
@@ -18,7 +18,7 @@ text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
 )
 doc_splits = text_splitter.split_documents(docs_list)
 
-# Add to vectorDB
+# vectorDB에 추가
 vectorstore = Chroma.from_documents(
     documents=doc_splits,
     collection_name="rag-chroma",
@@ -45,7 +45,7 @@ class GradeDocuments(BaseModel):
 
 
 # LLM with function call
-llm = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0)
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 structured_llm_grader = llm.with_structured_output(GradeDocuments)
 
 # Prompt
@@ -61,9 +61,9 @@ grade_prompt = ChatPromptTemplate.from_messages(
 )
 
 retrieval_grader = grade_prompt | structured_llm_grader
-question = "agent memory"
-# docs = retriever.invoke(question)
-# doc_txt = docs[1].page_content
+question = "야구에서 홈런은?"
+docs = retriever.invoke(question)
+doc_txt = docs[1].page_content
 # print(retrieval_grader.invoke({"question": question, "document": doc_txt}))
 
 ### Generate
@@ -75,7 +75,7 @@ from langchain_core.output_parsers import StrOutputParser
 prompt = hub.pull("rlm/rag-prompt")
 
 # LLM
-llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
+llm = ChatOpenAI(model_name="gpt-4o-mini", temperature=0)
 
 
 # Post-processing
@@ -88,8 +88,7 @@ rag_chain = prompt | llm | StrOutputParser()
 
 # Run
 generation = rag_chain.invoke({"context": docs, "question": question})
-print("---- Generation ----")
-print(generation)
+# print(generation)
 
 
 ### Hallucination Grader
@@ -105,7 +104,7 @@ class GradeHallucinations(BaseModel):
 
 
 # LLM with function call
-llm = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0)
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 structured_llm_grader = llm.with_structured_output(GradeHallucinations)
 
 # Prompt
@@ -119,7 +118,7 @@ hallucination_prompt = ChatPromptTemplate.from_messages(
 )
 
 hallucination_grader = hallucination_prompt | structured_llm_grader
-hallucination_grader.invoke({"documents": docs, "generation": generation})
+# print(hallucination_grader.invoke({"documents": docs, "generation": generation}))
 
 ### Answer Grader
 
@@ -134,7 +133,7 @@ class GradeAnswer(BaseModel):
 
 
 # LLM with function call
-llm = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0)
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 structured_llm_grader = llm.with_structured_output(GradeAnswer)
 
 # Prompt
@@ -148,12 +147,12 @@ answer_prompt = ChatPromptTemplate.from_messages(
 )
 
 answer_grader = answer_prompt | structured_llm_grader
-answer_grader.invoke({"question": question, "generation": generation})
+# print(answer_grader.invoke({"question": question, "generation": generation}))
 
 ### Question Re-writer
 
 # LLM
-llm = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0)
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
 # Prompt
 system = """You a question re-writer that converts an input question to a better version that is optimized \n 
@@ -169,7 +168,7 @@ re_write_prompt = ChatPromptTemplate.from_messages(
 )
 
 question_rewriter = re_write_prompt | llm | StrOutputParser()
-question_rewriter.invoke({"question": question})
+# print(question_rewriter.invoke({"question": question}))
 
 from typing import List
 
@@ -394,25 +393,10 @@ app = workflow.compile()
 from pprint import pprint
 
 # Run
-inputs = {"question": "Explain how the different types of agent memory work?"}
+inputs = {"question": "야구에서 홈런이 뭐야?"}
 for output in app.stream(inputs):
     for key, value in output.items():
-        # Node
         pprint(f"Node '{key}':")
-        # Optional: print full state at each node
-        # pprint.pprint(value["keys"], indent=2, width=80, depth=None)
-    pprint("\n---\n")
-
-# Final generation
-pprint(value["generation"])
-
-inputs = {"question": "Explain how chain of thought prompting works?"}
-for output in app.stream(inputs):
-    for key, value in output.items():
-        # Node
-        pprint(f"Node '{key}':")
-        # Optional: print full state at each node
-        # pprint.pprint(value["keys"], indent=2, width=80, depth=None)
     pprint("\n---\n")
 
 # Final generation

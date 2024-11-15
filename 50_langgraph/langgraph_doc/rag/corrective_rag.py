@@ -10,9 +10,7 @@ from langgraph.graph import StateGraph
 load_dotenv()
 
 urls = [
-    "https://lilianweng.github.io/posts/2023-06-23-agent/",
-    "https://lilianweng.github.io/posts/2023-03-15-prompt-engineering/",
-    "https://lilianweng.github.io/posts/2023-10-25-adv-attack-llm/",
+    "https://namu.wiki/w/%EC%95%BC%EA%B5%AC/%EA%B2%BD%EA%B8%B0%20%EB%B0%A9%EC%8B%9D"  # 야구/경기 방식
 ]
 
 docs = [WebBaseLoader(url).load() for url in urls]
@@ -49,7 +47,7 @@ class GradeDocuments(BaseModel):
 
 
 # LLM with function call
-llm = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0)
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 structured_llm_grader = llm.with_structured_output(GradeDocuments)
 
 # Prompt
@@ -64,10 +62,10 @@ grade_prompt = ChatPromptTemplate.from_messages(
 )
 
 retrieval_grader = grade_prompt | structured_llm_grader
-question = "agent memory"
+question = "야구 규칙에 대해 설명해주세요."
 docs = retriever.invoke(question)
 doc_txt = docs[1].page_content
-print(retrieval_grader.invoke({"question": question, "document": doc_txt}))
+# print(retrieval_grader.invoke({"question": question, "document": doc_txt}))
 
 ### Generate
 
@@ -78,7 +76,7 @@ from langchain_core.output_parsers import StrOutputParser
 prompt = hub.pull("rlm/rag-prompt")
 
 # LLM
-llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
+llm = ChatOpenAI(model_name="gpt-4o-mini", temperature=0)
 
 
 # Post-processing
@@ -90,13 +88,12 @@ def format_docs(docs):
 rag_chain = prompt | llm | StrOutputParser()
 
 # Run
-generation = rag_chain.invoke({"context": docs, "question": question})
-print(generation)
+# print(rag_chain.invoke({"context": docs, "question": question}))
 
 ### Question Re-writer
 
 # LLM
-llm = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0)
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
 # Prompt
 system = """You a question re-writer that converts an input question to a better version that is optimized \n 
@@ -112,7 +109,7 @@ re_write_prompt = ChatPromptTemplate.from_messages(
 )
 
 question_rewriter = re_write_prompt | llm | StrOutputParser()
-question_rewriter.invoke({"question": question})
+# print(question_rewriter.invoke({"question": question}))
 
 ### Search
 
@@ -140,8 +137,6 @@ class GraphState(TypedDict):
     generation: str
     web_search: str
     documents: List[str]
-
-    from langchain.schema import Document
 
 
 def retrieve(state):
@@ -209,8 +204,11 @@ def grade_documents(state):
             filtered_docs.append(d)
         else:
             print("---GRADE: DOCUMENT NOT RELEVANT---")
-            web_search = "Yes"
             continue
+
+    if not filtered_docs:
+        web_search = "Yes"
+
     return {"documents": filtered_docs, "question": question, "web_search": web_search}
 
 
@@ -289,8 +287,6 @@ def decide_to_generate(state):
         print("---DECISION: GENERATE---")
         return "generate"
 
-    from langgraph.graph import END, StateGraph, START
-
 
 workflow = StateGraph(GraphState)
 
@@ -322,28 +318,11 @@ app = workflow.compile()
 from pprint import pprint
 
 # Run
-inputs = {"question": "What are the types of agent memory?"}
+# inputs = {"question": "야구에서 홈런이 뭐야?"}
+inputs = {"question": "축구에서 파울이 뭐야?"}
 for output in app.stream(inputs):
     for key, value in output.items():
-        # Node
         pprint(f"Node '{key}':")
-        # Optional: print full state at each node
-        # pprint.pprint(value["keys"], indent=2, width=80, depth=None)
-    pprint("\n---\n")
-
-# Final generation
-pprint(value["generation"])
-
-from pprint import pprint
-
-# Run
-inputs = {"question": "How does the AlphaCodium paper work?"}
-for output in app.stream(inputs):
-    for key, value in output.items():
-        # Node
-        pprint(f"Node '{key}':")
-        # Optional: print full state at each node
-        # pprint.pprint(value["keys"], indent=2, width=80, depth=None)
     pprint("\n---\n")
 
 # Final generation

@@ -3,7 +3,6 @@ from functools import wraps
 from typing import Annotated, Literal, Sequence
 
 from dotenv import load_dotenv
-from langchain import hub
 from langchain.tools.retriever import create_retriever_tool
 from langchain_community.document_loaders import WebBaseLoader
 from langchain_community.vectorstores import Chroma
@@ -13,11 +12,11 @@ from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langgraph.graph import END, StateGraph, START
 from langgraph.graph.message import add_messages
+from langgraph.prebuilt import ToolNode, tools_condition
 from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
-from langgraph.graph import END, StateGraph, START
-from langgraph.prebuilt import ToolNode, tools_condition
 
 
 def elapsed_time(func):
@@ -42,7 +41,9 @@ def pretty_print_docs(docs):
 
 load_dotenv()
 
-urls = ["https://rudaks.tistory.com/entry/langchain-Conceptual-guide"]
+urls = [
+    "https://namu.wiki/w/%EC%95%BC%EA%B5%AC/%EA%B2%BD%EA%B8%B0%20%EB%B0%A9%EC%8B%9D"  # 야구/경기 방식
+]
 
 docs = [WebBaseLoader(url).load() for url in urls]
 docs_list = [item for sublist in docs for item in sublist]
@@ -52,7 +53,7 @@ text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
 )
 doc_splits = text_splitter.split_documents(docs_list)
 
-# # Add to vectorDB
+# Add to vectorDB
 vectorstore = Chroma.from_documents(
     documents=doc_splits,
     collection_name="rag-chroma",
@@ -63,8 +64,8 @@ retriever = vectorstore.as_retriever()
 
 retriever_tool = create_retriever_tool(
     retriever,
-    "retrieve_blog_posts",
-    "Search and return information about blog posts on langchain conceptual guide.",
+    "retrieve_baseball",
+    "Search and return information about game, rules on baseball.",
 )
 
 tools = [retriever_tool]
@@ -77,7 +78,6 @@ class AgentState(TypedDict):
 ### Edges
 
 
-@elapsed_time
 def grade_documents(state) -> Literal["generate", "rewrite"]:
     """
     Determines whether the retrieved documents are relevant to the question.
@@ -318,10 +318,9 @@ import pprint
 
 inputs = {
     "messages": [
-        # ("user", "LCEL의 특징에 대해 알려줘"),
-        # ("user", "langchain 청킹"), # rewrite
-        ("user", "한국의 수도는?"),
-        # ("user", "langchain의 개념은 뭐야?"),  # tool_calls
+        ("user", "야구에서 홈런은 뭐야?"),
+        # ("user", "한국의 수도는?"),
+        # ("user", "야구 축구"),
     ]
 }
 
