@@ -4,6 +4,7 @@ from typing import List
 from dotenv import load_dotenv
 from langchain_core.messages import SystemMessage
 from langchain_openai import ChatOpenAI
+from langgraph.checkpoint.memory import MemorySaver
 from langgraph.checkpoint.sqlite import SqliteSaver
 from pydantic import BaseModel
 
@@ -97,8 +98,7 @@ class State(TypedDict):
     messages: Annotated[list, add_messages]
 
 
-conn = sqlite3.connect("checkpoints.sqlite", check_same_thread=False)
-memory = SqliteSaver(conn)
+memory = MemorySaver()
 
 workflow = StateGraph(State)
 workflow.add_node("info", info_chain)
