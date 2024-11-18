@@ -72,8 +72,8 @@ from typing_extensions import TypedDict
 from langchain_openai import ChatOpenAI
 
 
-# This defines the object that is passed between each node
-# in the graph. We will create different nodes for each agent and tool
+# 여기서 각 노드에서 전달되는 객체를 정의한다.
+# 그래프에서 각 에이전트와 도구에 다른 노드를 생성한다.
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], operator.add]
     sender: str
@@ -84,7 +84,7 @@ import functools
 from langchain_core.messages import AIMessage
 
 
-# Helper function to create a node for a given agent
+# 해당 에이전트의 노드를 만드는데 필요한 헬퍼 함수
 def agent_node(state, agent, name):
     result = agent.invoke(state)
     # We convert the agent output into a format that is suitable to append to the global state
@@ -102,7 +102,7 @@ def agent_node(state, agent, name):
 
 llm = ChatOpenAI(model="gpt-4o-mini")
 
-# Research agent and node
+# Research 에이전트와 노드
 research_agent = create_agent(
     llm,
     [tavily_tool],
@@ -124,7 +124,6 @@ tools = [tavily_tool, python_repl]
 tool_node = ToolNode(tools)
 
 # Either agent can decide to end
-from typing import Literal
 
 
 def router(state):
@@ -159,10 +158,9 @@ workflow.add_conditional_edges(
 
 workflow.add_conditional_edges(
     "call_tool",
-    # Each agent node updates the 'sender' field
-    # the tool calling node does not, meaning
-    # this edge will route back to the original agent
-    # who invoked the tool
+    # 각 에이전트는 'sender' 필드를 업데이트한다.
+    # 도구를 호출하는 노드는 그렇지 않으므로
+    # 이 엣지는 도구를 호출한 원래 에이전트로 돌아간다.
     lambda x: x["sender"],
     {
         "Researcher": "Researcher",
@@ -197,7 +195,7 @@ events = graph.stream(
         ],
     },
     # Maximum number of steps to take in the graph
-    {"recursion_limit": 150},
+    {"recursion_limit": 10},
 )
 for s in events:
     print(s)

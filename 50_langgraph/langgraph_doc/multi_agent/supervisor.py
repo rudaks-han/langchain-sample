@@ -1,3 +1,6 @@
+import langchain
+from IPython.core.display import Image
+from IPython.core.display_functions import display
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -6,6 +9,8 @@ from typing import Annotated
 
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_experimental.tools import PythonREPLTool
+
+langchain.debug = True
 
 tavily_tool = TavilySearchResults(max_results=2)
 
@@ -106,13 +111,32 @@ workflow.add_edge(START, "supervisor")
 
 graph = workflow.compile()
 
-for s in graph.stream(
-    {
-        "messages": [
-            HumanMessage(content="Code hello world and print it to the terminal")
-        ]
-    }
-):
-    if "__end__" not in s:
-        print(s)
-        print("----")
+try:
+    display(
+        Image(
+            graph.get_graph(xray=True).draw_mermaid_png(
+                output_file_path="./supervisor.png"
+            )
+        )
+    )
+except Exception:
+    # This requires some extra dependencies and is optional
+    pass
+
+# for s in graph.stream(
+#     {
+#         "messages": [
+#             HumanMessage(content="Code hello world and print it to the terminal")
+#         ]
+#     }
+# ):
+#     if "__end__" not in s:
+#         print(s)
+#         print("----")
+
+# for s in graph.stream(
+#     {"messages": [HumanMessage(content="삼성전자 최근 3년 매출 보고서를 작성해줘")]}
+# ):
+#     if "__end__" not in s:
+#         print(s)
+#         print("----")
