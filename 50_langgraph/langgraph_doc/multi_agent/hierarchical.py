@@ -127,6 +127,7 @@ from langchain_core.messages import trim_messages
 
 llm = ChatOpenAI(model="gpt-4o-mini")
 
+# trim_messages는 특정 토큰 수 혹은 지정된 메시지 수로 채팅 이력의 크기를 줄이기 위해 사용된다.
 trimmer = trim_messages(
     max_tokens=100000,
     strategy="last",
