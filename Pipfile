@@ -42,7 +42,7 @@ pytesseract = "*"
 transformers = "*"
 einops = "*"
 ninja = "*"
-flash-attn = "*"
+langchain-fireworks = "*"
 
 [dev-packages]
 
