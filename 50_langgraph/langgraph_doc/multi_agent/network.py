@@ -87,20 +87,19 @@ from langchain_core.messages import AIMessage
 # 해당 에이전트의 노드를 만드는데 필요한 헬퍼 함수
 def agent_node(state, agent, name):
     result = agent.invoke(state)
-    # We convert the agent output into a format that is suitable to append to the global state
+    # 에이전트 출력을 전역 상태에 추가될 형식으로 변환한다.
     if isinstance(result, ToolMessage):
         pass
     else:
         result = AIMessage(**result.dict(exclude={"type", "name"}), name=name)
     return {
         "messages": [result],
-        # Since we have a strict workflow, we can
-        # track the sender so we know who to pass to next.
+        # 엄격한 워크플로우를 가지고 있기 때문에 다음에 누구에게 전달하는지 알 수 있다.
         "sender": name,
     }
 
 
-llm = ChatOpenAI(model="gpt-4o-mini")
+llm = ChatOpenAI(model="gpt-4o")
 
 # Research 에이전트와 노드
 research_agent = create_agent(
@@ -110,7 +109,7 @@ research_agent = create_agent(
 )
 research_node = functools.partial(agent_node, agent=research_agent, name="Researcher")
 
-# chart_generator
+# chart_generator 에이전트와 노드
 chart_agent = create_agent(
     llm,
     [python_repl],
@@ -159,8 +158,7 @@ workflow.add_conditional_edges(
 workflow.add_conditional_edges(
     "call_tool",
     # 각 에이전트는 'sender' 필드를 업데이트한다.
-    # 도구를 호출하는 노드는 그렇지 않으므로
-    # 이 엣지는 도구를 호출한 원래 에이전트로 돌아간다.
+    # 도구를 호출하는 노드는 호출한 원래 에이전트로 돌아간다.
     lambda x: x["sender"],
     {
         "Researcher": "Researcher",
@@ -188,14 +186,15 @@ events = graph.stream(
     {
         "messages": [
             HumanMessage(
-                content="Fetch the UK's GDP over the past 5 years,"
-                " then draw a line graph of it."
-                " Once you code it up, finish."
+                # content="Fetch the UK's GDP over the past 5 years,"
+                # " then draw a line graph of it."
+                # " Once you code it up, finish."
+                content="과거 5년 동안 한국의 GDP를 가져와서 라인 그래프로 그리고, 완료해줘~"
             )
         ],
     },
     # Maximum number of steps to take in the graph
-    {"recursion_limit": 10},
+    {"recursion_limit": 100},
 )
 for s in events:
     print(s)
