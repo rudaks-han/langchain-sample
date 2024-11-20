@@ -1,6 +1,3 @@
-import langchain
-from IPython.core.display import Image
-from IPython.core.display_functions import display
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -8,135 +5,150 @@ load_dotenv()
 from typing import Annotated
 
 from langchain_community.tools.tavily_search import TavilySearchResults
-from langchain_experimental.tools import PythonREPLTool
-
-langchain.debug = True
+from langchain_core.tools import tool
+from langchain_experimental.utilities import PythonREPL
 
 tavily_tool = TavilySearchResults(max_results=2)
 
-# 이것을 로컬에서 코드를 실행하고 안전하지 않을 수 있다.
-python_repl_tool = PythonREPLTool()
-
-from langchain_core.messages import HumanMessage
+# This executes code locally, which can be unsafe
+repl = PythonREPL()
 
 
-def agent_node(state, agent, name):
-    result = agent.invoke(state)
-    return {
-        "messages": [HumanMessage(content=result["messages"][-1].content, name=name)]
-    }
+@tool
+def python_repl_tool(
+    code: Annotated[str, "The python code to execute to generate your chart."],
+):
+    """Use this to execute python code and do math. If you want to see the output of a value,
+    you should print it out with `print(...)`. This is visible to the user."""
+    try:
+        result = repl.run(code)
+    except BaseException as e:
+        return f"Failed to execute. Error: {repr(e)}"
+    result_str = (
+        f"Successfully executed:\n\`\`\`python\n{code}\n\`\`\`\nStdout: {result}"
+    )
+    return result_str
 
 
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_openai import ChatOpenAI
-from pydantic import BaseModel
+# from langchain_core.messages import HumanMessage
+
+from langgraph.graph import MessagesState
+
+
+class AgentState(MessagesState):
+    # 'next' 필드는 다음에 어느 노드로 라우팅하는지 알려준다.
+    next: str
+
+
 from typing import Literal
+from typing_extensions import TypedDict
+from langchain_openai import ChatOpenAI
 
-members = ["Researcher", "Coder"]
+members = ["researcher", "coder"]
+# 팀 supervisor는 LLM 노드이다. 다음 실행할 에이전트를 선택하고 작업이 완료되었는지를 결정한다.
+options = members + ["FINISH"]
+
 system_prompt = (
     "You are a supervisor tasked with managing a conversation between the"
-    " following workers:  {members}. Given the following user request,"
+    f" following workers: {members}. Given the following user request,"
     " respond with the worker to act next. Each worker will perform a"
     " task and respond with their results and status. When finished,"
     " respond with FINISH."
 )
-# 팀 supervisor는 LLM 노드이다. 다음 실행할 에이전트를 선택하고 작업이 완료되었는지를 결정한다.
-options = ["FINISH"] + members
 
 
-class routeResponse(BaseModel):
+class Router(TypedDict):
+    """Worker to route to next. If no workers needed, route to FINISH."""
+
     next: Literal[*options]
 
 
-prompt = ChatPromptTemplate.from_messages(
-    [
-        ("system", system_prompt),
-        MessagesPlaceholder(variable_name="messages"),
-        (
-            "system",
-            "Given the conversation above, who should act next?"
-            " Or should we FINISH? Select one of: {options}",
-        ),
-    ]
-).partial(options=str(options), members=", ".join(members))
+llm = ChatOpenAI(model="gpt-4o")
 
 
-llm = ChatOpenAI(model="gpt-4o-mini")
+def supervisor_node(state: AgentState) -> AgentState:
+    messages = [
+        {"role": "system", "content": system_prompt},
+    ] + state["messages"]
+    response = llm.with_structured_output(Router).invoke(messages)
+    next_ = response["next"]
+    if next_ == "FINISH":
+        next_ = END
+
+    return {"next": next_}
 
 
-def supervisor_agent(state):
-    supervisor_chain = prompt | llm.with_structured_output(routeResponse)
-    return supervisor_chain.invoke(state)
-
-
-import functools
-import operator
-from typing import Sequence
-from typing_extensions import TypedDict
-
-from langchain_core.messages import BaseMessage
-
-from langgraph.graph import END, StateGraph, START
+from langchain_core.messages import HumanMessage
+from langgraph.graph import StateGraph, START, END
 from langgraph.prebuilt import create_react_agent
 
 
-# AgentState는 그래프에서 각 노드의 입력이다.
-class AgentState(TypedDict):
-    # 어노테이션은 새 메시지가 항상 현재 상태에 추가될 것이라고 그래프에 알려준다.
-    messages: Annotated[Sequence[BaseMessage], operator.add]
-    # 'next' 필드는 다음으로 라우팅할 위치를 나타낸다.
-    next: str
+research_agent = create_react_agent(
+    llm, tools=[tavily_tool], state_modifier="You are a researcher. DO NOT do any math."
+)
 
 
-research_agent = create_react_agent(llm, tools=[tavily_tool])
-research_node = functools.partial(agent_node, agent=research_agent, name="Researcher")
+def research_node(state: AgentState) -> AgentState:
+    result = research_agent.invoke(state)
+    return {
+        "messages": [
+            HumanMessage(content=result["messages"][-1].content, name="researcher")
+        ]
+    }
 
-# NOTE: 이것은 코드를 임의로 실행하기 때문에 주의깊게 사용해야 한다.
+
+# NOTE: THIS PERFORMS ARBITRARY CODE EXECUTION, WHICH CAN BE UNSAFE WHEN NOT SANDBOXED
 code_agent = create_react_agent(llm, tools=[python_repl_tool])
-code_node = functools.partial(agent_node, agent=code_agent, name="Coder")
 
-workflow = StateGraph(AgentState)
-workflow.add_node("Researcher", research_node)
-workflow.add_node("Coder", code_node)
-workflow.add_node("supervisor", supervisor_agent)
+
+def code_node(state: AgentState) -> AgentState:
+    result = code_agent.invoke(state)
+    return {
+        "messages": [HumanMessage(content=result["messages"][-1].content, name="coder")]
+    }
+
+
+builder = StateGraph(AgentState)
+builder.add_edge(START, "supervisor")
+builder.add_node("supervisor", supervisor_node)
+builder.add_node("researcher", research_node)
+builder.add_node("coder", code_node)
 
 for member in members:
-    # 작업이 완료되면 항상 supervisor에게 "보고"하도록 원한다.
-    workflow.add_edge(member, "supervisor")
-# supervisor는 next 필드를 그래프 상태에서 어떤 노드로 라우팅하거나 종료할 지 채운다.
-conditional_map = {k: k for k in members}
-conditional_map["FINISH"] = END
-workflow.add_conditional_edges("supervisor", lambda x: x["next"], conditional_map)
-workflow.add_edge(START, "supervisor")
+    # supervisor에게 작업이 완료되었음을 항상 알려주기를 원한다.
+    builder.add_edge(member, "supervisor")
 
-graph = workflow.compile()
 
-try:
-    display(
-        Image(
-            graph.get_graph(xray=True).draw_mermaid_png(
-                output_file_path="./supervisor.png"
+# supervisor는 그래프 상태의 "next" 필드를 채워서 노드로 라우팅하거나 종료한다.
+builder.add_conditional_edges("supervisor", lambda state: state["next"])
+# 마지막으로 진입점을 추가한다.
+builder.add_edge(START, "supervisor")
+
+graph = builder.compile()
+
+from IPython.display import display, Image
+
+display(Image(graph.get_graph().draw_mermaid_png(output_file_path="./supervisor.png")))
+
+# 예제 1
+# for s in graph.stream(
+#     {"messages": [("user", "42의 제곱근은 얼마야?")]}, subgraphs=True
+# ):
+#     print(s)
+#     print("----")
+
+
+# 예제 2
+for s in graph.stream(
+    {
+        "messages": [
+            (
+                "user",
+                "한국과 일본의 2023년 GDP를 찾아서 평균을 계산해줘",
             )
-        )
-    )
-except Exception:
-    # This requires some extra dependencies and is optional
-    pass
-
-# for s in graph.stream(
-#     {
-#         "messages": [
-#             HumanMessage(content="Code hello world and print it to the terminal")
-#         ]
-#     }
-# ):
-#     if "__end__" not in s:
-#         print(s)
-#         print("----")
-
-# for s in graph.stream(
-#     {"messages": [HumanMessage(content="삼성전자 최근 3년 매출 보고서를 작성해줘")]}
-# ):
-#     if "__end__" not in s:
-#         print(s)
-#         print("----")
+        ]
+    },
+    subgraphs=True,
+):
+    print(s)
+    print("----")
