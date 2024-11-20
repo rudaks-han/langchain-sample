@@ -43,6 +43,9 @@ transformers = "*"
 einops = "*"
 ninja = "*"
 langchain-fireworks = "*"
+pdfplumber = "*"
+pypdf = "*"
+rapidocr-onnxruntime = "*"
 
 [dev-packages]
 
