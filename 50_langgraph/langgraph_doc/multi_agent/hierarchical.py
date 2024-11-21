@@ -125,7 +125,7 @@ from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph, START
 from langchain_core.messages import trim_messages
 
-llm = ChatOpenAI(model="gpt-4o-mini")
+llm = ChatOpenAI(model="gpt-4o")
 
 # trim_messages는 특정 토큰 수 혹은 지정된 메시지 수로 채팅 이력의 크기를 줄이기 위해 사용된다.
 trimmer = trim_messages(
@@ -258,10 +258,10 @@ display(
     )
 )
 
-for s in research_chain.stream("2022년 한국시리즈는 언제야?", {"recursion_limit": 100}):
-    if "__end__" not in s:
-        print(s)
-        print("---")
+# for s in research_chain.stream("2022년 한국시리즈는 언제야?", {"recursion_limit": 100}):
+#     if "__end__" not in s:
+#         print(s)
+#         print("---")
 
 import operator
 
@@ -384,9 +384,84 @@ display(
     Image(chain.get_graph().draw_mermaid_png(output_file_path="./hierarchical2.png"))
 )
 
-for s in authoring_chain.stream(
-    "Write an outline for poem and then write the poem to disk.",
-    {"recursion_limit": 100},
+# for s in authoring_chain.stream(
+#     "시에 대한 개요를 작성하고 그리고 시를 디스크에 쓰세요.",
+#     {"recursion_limit": 100},
+# ):
+#     if "__end__" not in s:
+#         print(s)
+#         print("---")
+
+from langchain_core.messages import BaseMessage
+from langchain_openai.chat_models import ChatOpenAI
+
+llm = ChatOpenAI(model="gpt-4o")
+
+supervisor_node = create_team_supervisor(
+    llm,
+    "You are a supervisor tasked with managing a conversation between the"
+    " following teams: {team_members}. Given the following user request,"
+    " respond with the worker to act next. Each worker will perform a"
+    " task and respond with their results and status. When finished,"
+    " respond with FINISH.",
+    ["ResearchTeam", "PaperWritingTeam"],
+)
+
+
+# Top-level graph state
+class State(TypedDict):
+    messages: Annotated[List[BaseMessage], operator.add]
+    next: str
+
+
+def get_last_message(state: State) -> str:
+    return state["messages"][-1].content
+
+
+def join_graph(response: dict):
+    return {"messages": [response["messages"][-1]]}
+
+
+# Define the graph.
+super_graph = StateGraph(State)
+# First add the nodes, which will do the work
+super_graph.add_node("ResearchTeam", get_last_message | research_chain | join_graph)
+super_graph.add_node(
+    "PaperWritingTeam", get_last_message | authoring_chain | join_graph
+)
+super_graph.add_node("supervisor", supervisor_node)
+
+# Define the graph connections, which controls how the logic
+# propagates through the program
+super_graph.add_edge("ResearchTeam", "supervisor")
+super_graph.add_edge("PaperWritingTeam", "supervisor")
+super_graph.add_conditional_edges(
+    "supervisor",
+    lambda x: x["next"],
+    {
+        "PaperWritingTeam": "PaperWritingTeam",
+        "ResearchTeam": "ResearchTeam",
+        "FINISH": END,
+    },
+)
+super_graph.add_edge(START, "supervisor")
+super_graph = super_graph.compile()
+
+from IPython.display import Image, display
+
+display(
+    Image(
+        super_graph.get_graph().draw_mermaid_png(output_file_path="hierarchical3.png")
+    )
+)
+
+for s in super_graph.stream(
+    {
+        "messages": [
+            HumanMessage(content="AI agents를 조사해서 간단한 보고서를 작성해줘")
+        ],
+    },
+    {"recursion_limit": 150},
 ):
     if "__end__" not in s:
         print(s)
