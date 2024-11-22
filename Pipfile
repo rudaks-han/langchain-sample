@@ -51,6 +51,7 @@ pymupdf4llm = "*"
 matplotlib = "*"
 openparse = "*"
 tesseract = "*"
+pysimplegui = "*"
 
 [dev-packages]
 

@@ -9,7 +9,9 @@ def pretty_print_docs(docs):
     )
 
 
-file_path = "./sample/SPRI_AI_Brief_2023년12월호_F.pdf"
+# file_path = "./sample/SPRI_AI_Brief_2023년12월호_F.pdf"
+# file_path = "./sample/invoice_sample.pdf"
+file_path = "./sample/invoice.pdf"
 
 # pip install rapidocr-onnxruntime
 if __name__ == "__main__":

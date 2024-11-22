@@ -16,7 +16,10 @@ def pretty_print_docs(docs):
 
 
 api_key = os.environ["UPSTAGE_API_KEY"]
-file_path = "./sample/SPRI_AI_Brief_2023년12월호_F.pdf"
+file_path = "../sample/SPRI_AI_Brief_2023년12월호_F.pdf"
+# file_path = "../sample/invoice.pdf"
+# file_path = "../sample/invoice_sample.pdf"
+# file_path = "../sample/table_sample.pdf"
 
 # url = "https://api.upstage.ai/v1/document-ai/document-parse"
 # headers = {"Authorization": f"Bearer {api_key}"}
