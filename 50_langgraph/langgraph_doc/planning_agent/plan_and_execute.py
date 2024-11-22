@@ -109,7 +109,6 @@ replanner = replanner_prompt | ChatOpenAI(
     model="gpt-4o", temperature=0
 ).with_structured_output(Act)
 
-from typing import Literal
 from langgraph.graph import END
 
 
@@ -191,7 +190,8 @@ display(
 )
 
 config = {"recursion_limit": 50}
-inputs = {"input": "2023년 호주 오픈 우승자의 고향은 어디야?"}
+# inputs = {"input": "2023년 호주 오픈 우승자의 고향은 어디야?"}
+inputs = {"input": "2011년 한국시리즈 MVP의 그 해 연봉은 얼마야?"}
 
 
 async def run():

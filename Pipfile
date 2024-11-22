@@ -46,6 +46,11 @@ langchain-fireworks = "*"
 pdfplumber = "*"
 pypdf = "*"
 rapidocr-onnxruntime = "*"
+pymupdf = "*"
+pymupdf4llm = "*"
+matplotlib = "*"
+openparse = "*"
+tesseract = "*"
 
 [dev-packages]
 
