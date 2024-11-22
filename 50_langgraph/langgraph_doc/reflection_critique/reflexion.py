@@ -50,15 +50,16 @@ class ResponderWithRetries:
                 self.validator.invoke(response)
                 return {"messages": response}
             except ValidationError as e:
-                state = state + [
-                    response,
-                    ToolMessage(
-                        content=f"{repr(e)}\n\nPay close attention to the function schema.\n\n"
-                        + self.validator.schema_json()
-                        + " Respond by fixing all validation errors.",
-                        tool_call_id=response.tool_calls[0]["id"],
-                    ),
-                ]
+                # state = state + [
+                #     response,
+                #     ToolMessage(
+                #         content=f"{repr(e)}\n\nPay close attention to the function schema.\n\n"
+                #         + self.validator.schema_json()
+                #         + " Respond by fixing all validation errors.",
+                #         tool_call_id=response.tool_calls[0]["id"],
+                #     ),
+                # ]
+                pass
         return {"messages": response}
 
 
@@ -95,10 +96,11 @@ first_responder = ResponderWithRetries(
     runnable=initial_answer_chain, validator=validator
 )
 
-example_question = "Why is reflection useful in AI?"
-initial = first_responder.respond(
-    {"messages": [HumanMessage(content=example_question)]}
-)
+# example_question = "AI에서 reflectoin이 왜 중요한가?"
+# initial = first_responder.respond(
+#     {"messages": [HumanMessage(content=example_question)]}
+# )
+# print(initial)
 
 revise_instructions = """Revise your previous answer using the new information.
     - You should use the previous critique to add important information to your answer.
@@ -133,27 +135,27 @@ revisor = ResponderWithRetries(runnable=revision_chain, validator=revision_valid
 
 import json
 
-revised = revisor.respond(
-    {
-        "messages": [
-            HumanMessage(content=example_question),
-            initial["messages"],
-            ToolMessage(
-                tool_call_id=initial["messages"].tool_calls[0]["id"],
-                content=json.dumps(
-                    tavily_tool.invoke(
-                        {
-                            "query": initial["messages"].tool_calls[0]["args"][
-                                "search_queries"
-                            ][0]
-                        }
-                    )
-                ),
-            ),
-        ]
-    }
-)
-print(revised["messages"])
+# revised = revisor.respond(
+#     {
+#         "messages": [
+#             HumanMessage(content=example_question),
+#             initial["messages"],
+#             ToolMessage(
+#                 tool_call_id=initial["messages"].tool_calls[0]["id"],
+#                 content=json.dumps(
+#                     tavily_tool.invoke(
+#                         {
+#                             "query": initial["messages"].tool_calls[0]["args"][
+#                                 "search_queries"
+#                             ][0]
+#                         }
+#                     )
+#                 ),
+#             ),
+#         ]
+#     }
+# )
+# print(revised["messages"])
 
 
 from langchain_core.tools import StructuredTool
