@@ -1,11 +1,22 @@
 import operator
-from tkinter import END
 from typing import Annotated, Sequence, Any
 
-from langgraph.constants import START
+from langgraph.constants import END, START
+from langgraph.graph import StateGraph, add_messages
 from typing_extensions import TypedDict
 
-from langgraph.graph import StateGraph
+
+class State(TypedDict):
+    messages: Annotated[list, add_messages]
+
+
+class ReturnNodeValue:
+    def __init__(self, node_secret: str):
+        self._value = node_secret
+
+    def __call__(self, state: State) -> Any:
+        print(f"Adding {self._value} to {state['aggregate']}")
+        return {"aggregate": [self._value]}
 
 
 def reduce_fanouts(left, right):
@@ -22,15 +33,6 @@ class State(TypedDict):
     aggregate: Annotated[list, operator.add]
     fanout_values: Annotated[list, reduce_fanouts]
     which: str
-
-
-class ReturnNodeValue:
-    def __init__(self, node_secret: str):
-        self._value = node_secret
-
-    def __call__(self, state: State) -> Any:
-        print(f"Adding {self._value} to {state['aggregate']}")
-        return {"aggregate": [self._value]}
 
 
 builder = StateGraph(State)
