@@ -23,13 +23,11 @@ def reduce_fanouts(left, right):
     if left is None:
         left = []
     if not right:
-        # Overwrite
         return []
     return left + right
 
 
 class State(TypedDict):
-    # The operator.add reducer fn makes this append-only
     aggregate: Annotated[list, operator.add]
     fanout_values: Annotated[list, reduce_fanouts]
     which: str
@@ -62,13 +60,12 @@ class ParallelReturnNodeValue:
 
 
 builder.add_node("b", ParallelReturnNodeValue("I'm B", reliability=0.9))
-
 builder.add_node("c", ParallelReturnNodeValue("I'm C", reliability=0.1))
 builder.add_node("d", ParallelReturnNodeValue("I'm D", reliability=0.3))
 
 
 def aggregate_fanout_values(state: State) -> Any:
-    # Sort by reliability
+    # reliability 기준으로 정렬
     ranked_values = sorted(
         state["fanout_values"], key=lambda x: x["reliability"], reverse=True
     )
@@ -105,3 +102,9 @@ display(
         )
     )
 )
+
+result = graph.invoke({"aggregate": [], "which": "bc", "fanout_values": []})
+print(result)
+
+result = graph.invoke({"aggregate": [], "which": "cd"})
+print(result)
