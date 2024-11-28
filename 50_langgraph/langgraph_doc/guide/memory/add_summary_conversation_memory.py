@@ -1,7 +1,7 @@
 from typing import Literal
 
 from dotenv import load_dotenv
-from langchain_core.messages import SystemMessage, RemoveMessage, HumanMessage
+from langchain_core.messages import SystemMessage, RemoveMessage
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import MessagesState, StateGraph, START, END
@@ -11,7 +11,7 @@ load_dotenv()
 memory = MemorySaver()
 
 
-# summary 속성을 추가할 것이다. (MessagesState가 이미 가지고 있는 `messages` 키에 추가로)
+# summary 속성을 추가한다. (MessagesState가 이미 가지고 있는 `messages` 키에 추가로)
 class State(MessagesState):
     summary: str
 
@@ -29,7 +29,7 @@ def call_model(state: State):
     else:
         messages = state["messages"]
     response = model.invoke(messages)
-    # 리스트를 반환한다. 기존 리스트에 추가될 것이기 때문이다.
+
     return {"messages": [response]}
 
 
@@ -54,12 +54,12 @@ def summarize_conversation(state: State):
             "Extend the summary by taking into account the new messages above:"
         )
     else:
-        summary_message = "Create a summary of the conversation above:"
+        summary_message = "Create a summary of the conversation above in Korean:"
 
     messages = state["messages"] + [HumanMessage(content=summary_message)]
     response = model.invoke(messages)
     # 더 이상 표시하고 싶지 않은 메시지를 삭제해야 한다.
-    # 지난 두 메시지를 제외한 모든 메시지를 삭제할 것이다. 하지만 이것을 변경할 수 있다.
+    # 지난 두 메시지를 제외한 모든 메시지를 삭제할 것이다. 하지만 변경할 수도 있다.
     delete_messages = [RemoveMessage(id=m.id) for m in state["messages"][:-2]]
     return {"summary": response.content, "messages": delete_messages}
 
