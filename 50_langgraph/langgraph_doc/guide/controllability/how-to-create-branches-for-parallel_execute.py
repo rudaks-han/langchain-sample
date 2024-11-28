@@ -36,3 +36,6 @@ from IPython.display import Image, display
 display(
     Image(graph.get_graph().draw_mermaid_png(output_file_path="./parallel_execute.png"))
 )
+
+result = graph.invoke({"aggregate": []}, {"configurable": {"thread_id": "foo"}})
+print(result)

@@ -1,13 +1,11 @@
 import operator
 from typing import Annotated, Sequence, Any
 
-from typing_extensions import TypedDict
-
 from langgraph.graph import END, START, StateGraph
+from typing_extensions import TypedDict
 
 
 class State(TypedDict):
-    # The operator.add reducer fn makes this append-only
     aggregate: Annotated[list, operator.add]
     which: str
 
@@ -48,6 +46,7 @@ for node in intermediates:
 
 builder.add_edge("e", END)
 graph = builder.compile()
+
 
 from IPython.display import Image, display
 

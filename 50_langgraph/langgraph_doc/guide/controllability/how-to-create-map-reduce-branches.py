@@ -10,9 +10,9 @@ from typing_extensions import TypedDict
 
 load_dotenv()
 
-subjects_prompt = """Generate a comma separated list of between 2 and 5 examples related to: {topic}."""
-joke_prompt = """Generate a joke about {subject}"""
-best_joke_prompt = """Below are a bunch of jokes about {topic}. Select the best one! Return the ID of the best one.
+subjects_prompt = """{topic}과 관련된 2~5개의 예제 목록을 콤마를 구분으로 생성해 줘"""
+joke_prompt = """{subject}에 대한 농담을 만들어 줘"""
+best_joke_prompt = """아래 내용은 {topic}에 대한 농담이야. 가장 좋은 것을 선택해! 가장 좋은 것의 ID를 반환해줘.
 
 {jokes}"""
 
@@ -65,7 +65,9 @@ def generate_joke(state: JokeState):
 def continue_to_jokes(state: OverallState):
     # 'Send' 객체의 리스트를 반환할 것이다.
     # 각 'Send' 객체는 그래프의 노드 이름과 해당 노드로 보낼 상태로 구성된다.
-    return [Send("generate_joke", {"subject": s}) for s in state["subjects"]]
+    result = [Send("generate_joke", {"subject": s}) for s in state["subjects"]]
+    return result
+    # return [Send("generate_joke", {"subject": s}) for s in state["subjects"]]
 
 
 # 최적의 농담을 판단할 것이다.
@@ -90,5 +92,5 @@ from IPython.display import Image
 
 Image(app.get_graph().draw_mermaid_png(output_file_path="./map-reduce-branches.png"))
 
-for s in app.stream({"topic": "동물"}):
+for s in app.stream({"topic": "정치"}):
     print(s)

@@ -1,29 +1,31 @@
 import operator
-from typing import Annotated, Any
-
-from typing_extensions import TypedDict
+from typing import Annotated
 
 from langgraph.graph import StateGraph, START, END
+from typing_extensions import TypedDict
 
 
 class State(TypedDict):
-    # The operator.add reducer fn makes this append-only
     aggregate: Annotated[list, operator.add]
 
 
 def node_a(state):
+    print("I'm A")
     return {"aggregate": ["I'm A"]}
 
 
 def node_b(state):
+    print("I'm B")
     return {"aggregate": ["I'm B"]}
 
 
 def node_c(state):
+    print("I'm C")
     return {"aggregate": ["I'm C"]}
 
 
 def node_d(state):
+    print("I'm D")
     return {"aggregate": ["I'm A"]}
 
 
@@ -53,11 +55,12 @@ display(
 from langgraph.errors import GraphRecursionError
 
 try:
-    graph.invoke({"aggregate": []}, {"recursion_limit": 3})
+    result = graph.invoke({"aggregate": []}, {"recursion_limit": 3})
+    print(result)
 except GraphRecursionError:
     print("Recursion Error")
 
-try:
-    graph.invoke({"aggregate": []}, {"recursion_limit": 4})
-except GraphRecursionError:
-    print("Recursion Error")
+# try:
+#     graph.invoke({"aggregate": []}, {"recursion_limit": 4})
+# except GraphRecursionError:
+#     print("Recursion Error")
