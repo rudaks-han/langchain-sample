@@ -10,7 +10,7 @@ load_dotenv()
 @tool
 def search(query: str):
     """Call to surf the web."""
-    return f"I looked up: {query}. Result: It's sunny in San Francisco, but you better look out if you're a Gemini 😈."
+    return f"찾아봤습니다: {query}. 결과: 서울 날씨는 좋아요~ 😈."
 
 
 tools = [search]
@@ -19,7 +19,7 @@ tool_node = ToolNode(tools)
 # Set up the model
 from langchain_openai import ChatOpenAI
 
-model = ChatOpenAI(model="gpt-4o")
+model = ChatOpenAI(model="gpt-4o-mini")
 
 from pydantic import BaseModel
 

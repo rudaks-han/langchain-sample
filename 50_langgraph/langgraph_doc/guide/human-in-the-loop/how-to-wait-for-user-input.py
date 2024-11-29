@@ -45,7 +45,7 @@ display(
     )
 )
 
-initial_input = {"input": "hello world"}
+initial_input = {"input": "안녕~"}
 
 thread = {"configurable": {"thread_id": "1"}}
 
@@ -54,7 +54,7 @@ for event in graph.stream(initial_input, thread, stream_mode="values"):
 
 
 try:
-    user_input = input("Tell me how you want to update the state: ")
+    user_input = input("피드백 주세요: ")
 except:
     user_input = "go to step 3!"
 
@@ -65,7 +65,6 @@ graph.update_state(thread, {"user_feedback": user_input}, as_node="human_feedbac
 print("--State after update--")
 print(graph.get_state(thread))
 
-# We can check the next node, showing that it is node 3 (which follows human_feedback)
 # human_feedback 다음에 3번 노드가 있는지 확인하기 위해 다음 노드를 확인한다.
 print(graph.get_state(thread).next)
 

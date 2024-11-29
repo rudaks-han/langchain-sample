@@ -1,4 +1,3 @@
-# Set up the tool
 from dotenv import load_dotenv
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
@@ -71,7 +70,8 @@ current_state = app.get_state(thread)
 last_message = current_state.values["messages"][-1]
 last_message.tool_calls[0]["args"] = {"query": "현재 서울 날씨"}
 
-app.update_state(thread, {"messages": last_message})
+result = app.update_state(thread, {"messages": last_message})
+print(result)
 
 current_state = app.get_state(thread).values["messages"][-1].tool_calls
 print(current_state)

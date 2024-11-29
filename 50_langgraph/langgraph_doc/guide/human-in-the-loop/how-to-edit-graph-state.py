@@ -27,18 +27,16 @@ builder = StateGraph(State)
 builder.add_node("step_1", step_1)
 builder.add_node("step_2", step_2)
 builder.add_node("step_3", step_3)
+
 builder.add_edge(START, "step_1")
 builder.add_edge("step_1", "step_2")
 builder.add_edge("step_2", "step_3")
 builder.add_edge("step_3", END)
 
-# Set up memory
 memory = MemorySaver()
 
-# Add
 graph = builder.compile(checkpointer=memory, interrupt_before=["step_2"])
 
-# View
 display(
     Image(
         graph.get_graph().draw_mermaid_png(
@@ -47,10 +45,8 @@ display(
     )
 )
 
-# Input
-initial_input = {"input": "hello world"}
+initial_input = {"input": "안녕~"}
 
-# Thread
 thread = {"configurable": {"thread_id": "1"}}
 
 for event in graph.stream(initial_input, thread, stream_mode="values"):
@@ -60,7 +56,7 @@ for event in graph.stream(initial_input, thread, stream_mode="values"):
 print("Current state!")
 print(graph.get_state(thread).values)
 
-graph.update_state(thread, {"input": "hello universe!"})
+graph.update_state(thread, {"input": "안녕~ 수정했어!"})
 
 print("---\n---\nUpdated state!")
 print(graph.get_state(thread).values)

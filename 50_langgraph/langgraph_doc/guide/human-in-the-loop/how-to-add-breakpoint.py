@@ -44,10 +44,8 @@ display(
     )
 )
 
-# Input
-initial_input = {"input": "hello world"}
+initial_input = {"input": "안녕~"}
 
-# Thread
 thread = {"configurable": {"thread_id": "1"}}
 
 # 첫 번째 중단까지 그래프 실행
@@ -55,12 +53,12 @@ for event in graph.stream(initial_input, thread, stream_mode="values"):
     print(event)
 
 try:
-    user_approval = input("Do you want to go to Step 3? (yes/no): ")
+    user_approval = input("3단계로 가시겠습니까? (yes/no): ")
 except:
     user_approval = "yes"
 
 if user_approval.lower() == "yes":
-    # 승인 시 그래프 실행 계속
+    # input에 None 입력 시 이전 상태에서 그래프 실행 계속
     for event in graph.stream(None, thread, stream_mode="values"):
         print(event)
 else:
