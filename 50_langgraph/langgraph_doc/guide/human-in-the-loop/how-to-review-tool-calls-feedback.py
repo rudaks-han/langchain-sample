@@ -14,7 +14,7 @@ load_dotenv()
 def weather_search(city: str):
     """Search for the weather"""
     print("----")
-    print(f"Searching for: {city}")
+    print(f"{city}을 검색하고 있어요!")
     print("----")
     return "Sunny!"
 
@@ -107,7 +107,7 @@ print(tool_call_id)
 new_message = {
     "role": "tool",
     # 이건 자연어 피드백이다.
-    "content": "User requested changes: pass in the country as well",
+    "content": "사용자 요청 변경: 국가도 함께 전달",
     "name": "weather_search",
     "tool_call_id": tool_call_id,
 }

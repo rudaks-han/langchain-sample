@@ -106,7 +106,7 @@ from langchain_core.messages import HumanMessage
 
 config = {"configurable": {"thread_id": "2"}}
 input_message = HumanMessage(
-    content="Use the search tool to ask the user where they are, then look up the weather there"
+    content="그들이 어디에 있는지 묻는 도구를 사용하고, 그곳의 날씨를 찾아줘."
 )
 for event in app.stream({"messages": [input_message]}, config, stream_mode="values"):
     event["messages"][-1].pretty_print()
@@ -114,9 +114,7 @@ for event in app.stream({"messages": [input_message]}, config, stream_mode="valu
 tool_call_id = app.get_state(config).values["messages"][-1].tool_calls[0]["id"]
 
 # id를 사용하여 도구 호출을 만들고 원하는 응답을 추가한다.
-tool_message = [
-    {"tool_call_id": tool_call_id, "type": "tool", "content": "san francisco"}
-]
+tool_message = [{"tool_call_id": tool_call_id, "type": "tool", "content": "서울"}]
 
 # 이것은 아래와 동일하다.
 # from langchain_core.messages import ToolMessage

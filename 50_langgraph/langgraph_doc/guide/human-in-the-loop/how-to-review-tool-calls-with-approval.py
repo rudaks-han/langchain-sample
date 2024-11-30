@@ -14,7 +14,7 @@ load_dotenv()
 def weather_search(city: str):
     """Search for the weather"""
     print("----")
-    print(f"Searching for: {city}")
+    print(f"{city}을 검색하고 있어요!")
     print("----")
     return "Sunny!"
 

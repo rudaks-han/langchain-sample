@@ -70,7 +70,8 @@ app = workflow.compile(checkpointer=memory)
 from langchain_core.messages import HumanMessage
 
 config = {"configurable": {"thread_id": "1"}}
-input_message = HumanMessage(content="Can you play Taylor Swift's most popular song?")
+# input_message = HumanMessage(content="Can you play Taylor Swift's most popular song?")
+input_message = HumanMessage(content="성시경의 가장 인기 있는 노래를 재생해줄래?")
 for event in app.stream({"messages": [input_message]}, config, stream_mode="values"):
     event["messages"][-1].pretty_print()
 
@@ -83,6 +84,7 @@ for state in app.get_state_history(config):
     print("--")
 
 to_replay = all_states[2]
+print("--- to_replay.values ---")
 print(to_replay.values)
 print(to_replay.next)
 
@@ -115,10 +117,14 @@ last_message = to_replay.values["messages"][-1]
 
 # 마지막 메시지의 ID를 가져와서 그 ID로 새 메시지를 만들어보자.
 new_message = AIMessage(
-    content="It's quiet hours so I can't play any music right now!", id=last_message.id
+    content="조용한 시간이라 지금 음악을 재생할 수 없어!", id=last_message.id
 )
 
 branch_config = app.update_state(
     to_replay.config,
     {"messages": [new_message]},
 )
+
+branch_state = app.get_state(branch_config)
+print(branch_state.values)
+print(branch_state.next)
