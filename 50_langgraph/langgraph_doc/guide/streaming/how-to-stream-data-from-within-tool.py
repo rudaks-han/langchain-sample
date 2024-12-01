@@ -21,8 +21,8 @@ async def get_items(
         [
             {
                 "role": "user",
-                "content": f"Can you tell me what kind of items i might find in the following place: '{place}'. "
-                "List at least 3 such items separating them by a comma. And include a brief description of each item..",
+                "content": f"다음 장소에서 어떤 물건을 찾을 수 있는지 알려줄래? : '{place}'. "
+                "최소한 3개의 물건을 나열하고, 각 항목을 쉼표로 구분해줘. 그리고 각 물건에 대한 간단한 설명을 포함해.",
             }
         ],
         {"callbacks": callbacks},

@@ -9,14 +9,14 @@ from langgraph.graph import MessagesState, StateGraph
 
 async def my_node(state: MessagesState, config: RunnableConfig):
     chunks = [
-        "Four",
-        "score",
-        "and",
-        "seven",
-        "years",
-        "ago",
-        "our",
-        "fathers",
+        "87년",
+        "전",
+        ",",
+        "우리",
+        "의",
+        "선조",
+        "들",
+        "께서",
         "...",
     ]
     for chunk in chunks:

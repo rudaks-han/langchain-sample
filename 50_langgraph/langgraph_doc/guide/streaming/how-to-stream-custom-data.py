@@ -10,14 +10,14 @@ async def my_node(
     writer: StreamWriter,  # <-- chunk가 스트리밍되도록 StreamWriter를 제공한다.
 ):
     chunks = [
-        "Four",
-        "score",
-        "and",
-        "seven",
-        "years",
-        "ago",
-        "our",
-        "fathers",
+        "87년",
+        "전",
+        ",",
+        "우리",
+        "의",
+        "선조",
+        "들",
+        "께서",
         "...",
     ]
     for chunk in chunks:
@@ -41,7 +41,9 @@ inputs = [HumanMessage(content="무슨 생각 하고 있어?")]
 
 
 async def stream_content():
-    async for chunk in app.astream({"messages": inputs}, stream_mode="custom"):
+    async for chunk in app.astream(
+        {"messages": inputs}, stream_mode=["custom", "updates"]
+    ):
         print(chunk, flush=True)
 
 

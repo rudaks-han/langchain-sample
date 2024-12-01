@@ -33,7 +33,7 @@ async def call_model(state, config=None):
 
     llm_run_manager = callback_manager.on_chat_model_start({}, [messages])[0]
     response = await openai_client.chat.completions.create(
-        messages=messages, model="gpt-3.5-turbo", tools=[tool], stream=True
+        messages=messages, model="gpt-4o-mini", tools=[tool], stream=True
     )
 
     response_content = ""

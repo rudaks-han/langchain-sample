@@ -75,7 +75,8 @@ class QuestionSummarizationState(TypedDict):
 def generate_summary(state: QuestionSummarizationState):
     docs = state["logs"]
     # 여기에 커스텀 요약 로직을 구현할 수 있다.
-    summary = "Questions focused on usage of ChatOllama and Chroma vector store."
+    # summary = "Questions focused on usage of ChatOllama and Chroma vector store."
+    summary = "ChatOllama와 Chroma 벡터 저장소 사용에 대한 질문."
     return {"summary": summary}
 
 

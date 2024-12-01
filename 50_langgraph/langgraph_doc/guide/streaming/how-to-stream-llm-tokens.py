@@ -34,7 +34,7 @@ tool_node = ToolNode(tools)
 
 from langchain_openai import ChatOpenAI
 
-model = ChatOpenAI(model="gpt-3.5-turbo")
+model = ChatOpenAI(model="gpt-4o-mini")
 
 model = model.bind_tools(tools)
 
