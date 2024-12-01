@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
-from langgraph.graph import StateGraph, END, START, MessagesState
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
+from langgraph.graph import StateGraph, END, START, MessagesState
 
 load_dotenv()
 
@@ -9,7 +9,7 @@ load_dotenv()
 @tool
 def get_weather(city: str):
     """Get the weather for a specific city"""
-    return f"It's sunny in {city}!"
+    return f"{city}은 맑아요"
 
 
 raw_model = ChatOpenAI()
@@ -58,7 +58,7 @@ router_model = raw_model.with_structured_output(Router)
 
 
 def router_node(state: RouterState):
-    system_message = "Classify the incoming query as either about weather or not."
+    system_message = "다음 질문이 날씨에 관한 것인지 아닌지 분류해줘."
     messages = [{"role": "system", "content": system_message}] + state["messages"]
     route = router_model.invoke(messages)
     return {"route": route["route"]}
@@ -99,17 +99,17 @@ display(
 )
 
 config = {"configurable": {"thread_id": "1"}}
-inputs = {"messages": [{"role": "user", "content": "hi!"}]}
-for update in graph.stream(inputs, config=config, stream_mode="updates"):
-    print(update)
+inputs = {"messages": [{"role": "user", "content": "안녕!"}]}
+# for update in graph.stream(inputs, config=config, stream_mode="updates"):
+#     print(update)
 
 config = {"configurable": {"thread_id": "2"}}
-inputs = {"messages": [{"role": "user", "content": "what's the weather in sf"}]}
-for update in graph.stream(inputs, config=config, stream_mode="updates"):
-    print(update)
+inputs = {"messages": [{"role": "user", "content": "서울 날씨 어때?"}]}
+# for update in graph.stream(inputs, config=config, stream_mode="updates"):
+#     print(update)
 
 config = {"configurable": {"thread_id": "3"}}
-inputs = {"messages": [{"role": "user", "content": "what's the weather in sf"}]}
+inputs = {"messages": [{"role": "user", "content": "서울 날씨 어때?"}]}
 for update in graph.stream(inputs, config=config, stream_mode="values", subgraphs=True):
     print(update)
 
@@ -123,7 +123,7 @@ print(state.tasks[0])
 
 for update in graph.stream(None, config=config, stream_mode="values", subgraphs=True):
     print(update)
-
+#
 parent_graph_state_before_subgraph = next(
     h for h in graph.get_state_history(config) if h.next == ("weather_graph",)
 )
@@ -134,7 +134,7 @@ subgraph_state_before_model_node = next(
     if h.next == ("model_node",)
 )
 
-# This pattern can be extended no matter how many levels deep
+# 이 패턴은 얼마나 깊이 들어가도 확장될 수 있다.
 # subsubgraph_stat_history = next(h for h in graph.get_state_history(subgraph_state_before_model_node.tasks[0].state) if h.next == ('my_subsubgraph_node',))
 
 print(subgraph_state_before_model_node.next)
@@ -146,3 +146,63 @@ for value in graph.stream(
     subgraphs=True,
 ):
     print(value)
+
+
+print("---- 4 ----")
+config = {"configurable": {"thread_id": "4"}}
+inputs = {"messages": [{"role": "user", "content": "서울 날씨 어때?"}]}
+for update in graph.stream(inputs, config=config, stream_mode="updates"):
+    print(update)
+
+state = graph.get_state(config, subgraphs=True)
+print(state.values["messages"])
+
+graph.update_state(state.tasks[0].state.config, {"city": "부산"})
+
+for update in graph.stream(None, config=config, stream_mode="updates", subgraphs=True):
+    print(update)
+
+print("----- 14 -----")
+config = {"configurable": {"thread_id": "14"}}
+inputs = {"messages": [{"role": "user", "content": "서울 날씨 어때?"}]}
+for update in graph.stream(
+    inputs, config=config, stream_mode="updates", subgraphs=True
+):
+    print(update)
+# Graph execution should stop before the weather node
+print("interrupted!")
+
+state = graph.get_state(config, subgraphs=True)
+
+# We update the state by passing in the message we want returned from the weather node, and make sure to use as_node
+graph.update_state(
+    state.tasks[0].state.config,
+    {"messages": [{"role": "assistant", "content": "비와요"}]},
+    as_node="weather_node",
+)
+for update in graph.stream(None, config=config, stream_mode="updates", subgraphs=True):
+    print(update)
+
+print(graph.get_state(config).values["messages"])
+
+print("----- 8 -----")
+config = {"configurable": {"thread_id": "8"}}
+inputs = {"messages": [{"role": "user", "content": "서울 날씨 어때?"}]}
+for update in graph.stream(
+    inputs, config=config, stream_mode="updates", subgraphs=True
+):
+    print(update)
+# Graph execution should stop before the weather node
+print("interrupted!")
+
+# We update the state by passing in the message we want returned from the weather graph, making sure to use as_node
+# Note that we don't need to pass in the subgraph config, since we aren't updating the state inside the subgraph
+graph.update_state(
+    config,
+    {"messages": [{"role": "assistant", "content": "rainy"}]},
+    as_node="weather_graph",
+)
+for update in graph.stream(None, config=config, stream_mode="updates"):
+    print(update)
+
+print(graph.get_state(config).values["messages"])
