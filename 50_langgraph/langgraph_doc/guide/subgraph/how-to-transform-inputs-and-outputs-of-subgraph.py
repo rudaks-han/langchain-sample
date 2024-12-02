@@ -1,5 +1,5 @@
-from typing_extensions import TypedDict
 from langgraph.graph.state import StateGraph, START, END
+from typing_extensions import TypedDict
 
 
 class GrandChildState(TypedDict):
@@ -28,18 +28,14 @@ class ChildState(TypedDict):
 
 
 def call_grandchild_graph(state: ChildState) -> ChildState:
-    # NOTE: parent or grandchild keys won't be accessible here
-    # we're transforming the state from the child state channels (`my_child_key`)
-    # to the child state channels (`my_grandchild_key`)
+    # state를 child state channels (`my_child_key`)에서 child state channels (`my_grandchild_key`)로 변환한다.
     grandchild_graph_input = {"my_grandchild_key": state["my_child_key"]}
-    # we're transforming the state from the grandchild state channels (`my_grandchild_key`)
-    # back to the child state channels (`my_child_key`)
+    # 상태를 grandchild state channels (`my_grandchild_key`)에서 child state channels (`my_child_key`)로 변환한다.
     grandchild_graph_output = grandchild_graph.invoke(grandchild_graph_input)
     return {"my_child_key": grandchild_graph_output["my_grandchild_key"] + " today?"}
 
 
 child = StateGraph(ChildState)
-# NOTE: we're passing a function here instead of just compiled graph (`child_graph`)
 child.add_node("child_1", call_grandchild_graph)
 child.add_edge(START, "child_1")
 child.add_edge("child_1", END)
@@ -63,18 +59,15 @@ def parent_2(state: ParentState) -> ParentState:
 
 
 def call_child_graph(state: ParentState) -> ParentState:
-    # we're transforming the state from the parent state channels (`my_key`)
-    # to the child state channels (`my_child_key`)
+    # 상태를 parent state channels (`my_key`)에서 child state channels (`my_child_key`)로 변환한다.
     child_graph_input = {"my_child_key": state["my_key"]}
-    # we're transforming the state from the child state channels (`my_child_key`)
-    # back to the parent state channels (`my_key`)
+    # 상태를 child state channels (`my_child_key`)에서 parent state channels (`my_key`)로 변환한다.
     child_graph_output = child_graph.invoke(child_graph_input)
     return {"my_key": child_graph_output["my_child_key"]}
 
 
 parent = StateGraph(ParentState)
 parent.add_node("parent_1", parent_1)
-# NOTE: we're passing a function here instead of just a compiled graph (`<code>child_graph</code>`)
 parent.add_node("child", call_child_graph)
 parent.add_node("parent_2", parent_2)
 
