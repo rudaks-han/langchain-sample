@@ -43,35 +43,30 @@ model_with_structured_output = model.with_structured_output(WeatherResponse)
 
 from langgraph.graph import StateGraph, END
 from langgraph.prebuilt import ToolNode
-
-tools = [get_weather, WeatherResponse]
-
-model_with_response_tool = model.bind_tools(tools)
+from langchain_core.messages import HumanMessage
 
 
 def call_model(state: AgentState):
-    response = model_with_response_tool.invoke(state["messages"])
+    response = model_with_tools.invoke(state["messages"])
     return {"messages": [response]}
 
 
 def respond(state: AgentState):
-    response = WeatherResponse(**state["messages"][-1].tool_calls[0]["args"])
+    response = model_with_structured_output.invoke(
+        [HumanMessage(content=state["messages"][-2].content)]
+    )
     return {"final_response": response}
 
 
 def should_continue(state: AgentState):
     messages = state["messages"]
     last_message = messages[-1]
-    if (
-        len(last_message.tool_calls) == 1
-        and last_message.tool_calls[0]["name"] == "WeatherResponse"
-    ):
+    if not last_message.tool_calls:
         return "respond"
     else:
         return "continue"
 
 
-# Define a new graph
 workflow = StateGraph(AgentState)
 
 workflow.add_node("agent", call_model)

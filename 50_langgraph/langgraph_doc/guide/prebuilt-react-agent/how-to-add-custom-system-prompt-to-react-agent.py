@@ -1,4 +1,3 @@
-# First we initialize the model we want to use.
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 
@@ -7,31 +6,27 @@ load_dotenv()
 model = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
 
-# For this tutorial we will use custom tool that returns pre-defined values for weather in two cities (NYC & SF)
-
 from typing import Literal
 
 from langchain_core.tools import tool
 
 
 @tool
-def get_weather(city: Literal["nyc", "sf"]):
+def get_weather(city: Literal["서울", "부산"]):
     """Use this to get weather information."""
-    if city == "nyc":
-        return "It might be cloudy in nyc"
-    elif city == "sf":
-        return "It's always sunny in sf"
+    if city == "서울":
+        return "서울은 흐릴것 같아요"
+    elif city == "부산":
+        return "부산은 항상 맑아요"
     else:
         raise AssertionError("Unknown city")
 
 
 tools = [get_weather]
 
-# We can add our system prompt here
+# 여기에 시스템 프롬프트를 추가한다
 
-prompt = "Respond in Italian"
-
-# Define the graph
+prompt = "영어로 대답해줘"
 
 from langgraph.prebuilt import create_react_agent
 
@@ -47,6 +42,6 @@ def print_stream(stream):
             message.pretty_print()
 
 
-inputs = {"messages": [("user", "What's the weather in NYC?")]}
+inputs = {"messages": [("user", "서울 날씨 어때?")]}
 
 print_stream(graph.stream(inputs, stream_mode="values"))

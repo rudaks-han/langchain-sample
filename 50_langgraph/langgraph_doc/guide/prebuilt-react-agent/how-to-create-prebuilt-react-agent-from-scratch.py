@@ -14,8 +14,6 @@ load_dotenv()
 class AgentState(TypedDict):
     """The state of the agent."""
 
-    # add_messages is a reducer
-    # See https://langchain-ai.github.io/langgraph/concepts/low_level/#reducers
     messages: Annotated[Sequence[BaseMessage], add_messages]
 
 
@@ -28,12 +26,10 @@ model = ChatOpenAI(model="gpt-4o-mini")
 @tool
 def get_weather(location: str):
     """Call to get the weather from a specific location."""
-    # This is a placeholder for the actual implementation
-    # Don't let the LLM know this though 😊
-    if any([city in location.lower() for city in ["sf", "san francisco"]]):
-        return "It's sunny in San Francisco, but you better look out if you're a Gemini 😈."
+    if location == "서울":
+        return "서울은 항상 맑아요~ 😈."
     else:
-        return f"I am not sure what the weather is in {location}"
+        return f"{location}의 날씨가 어떤지 모르겠어요 ㅠ"
 
 
 tools = [get_weather]
@@ -47,7 +43,6 @@ from langchain_core.runnables import RunnableConfig
 tools_by_name = {tool.name: tool for tool in tools}
 
 
-# Define our tool node
 def tool_node(state: AgentState):
     outputs = []
     for tool_call in state["messages"][-1].tool_calls:
@@ -62,71 +57,47 @@ def tool_node(state: AgentState):
     return {"messages": outputs}
 
 
-# Define the node that calls the model
 def call_model(
     state: AgentState,
     config: RunnableConfig,
 ):
-    # this is similar to customizing the create_react_agent with state_modifier, but is a lot more flexible
+    # 이건 create_react_agent를 state_modifier로 커스터마이징하는 것과 비슷하지만 훨씬 유연하다
     system_prompt = SystemMessage(
         "You are a helpful AI assistant, please respond to the users query to the best of your ability!"
     )
     response = model.invoke([system_prompt] + state["messages"], config)
-    # We return a list, because this will get added to the existing list
     return {"messages": [response]}
 
 
-# Define the conditional edge that determines whether to continue or not
 def should_continue(state: AgentState):
     messages = state["messages"]
     last_message = messages[-1]
-    # If there is no function call, then we finish
     if not last_message.tool_calls:
         return "end"
-    # Otherwise if there is, we continue
     else:
         return "continue"
 
 
 from langgraph.graph import StateGraph, END
 
-# Define a new graph
 workflow = StateGraph(AgentState)
 
-# Define the two nodes we will cycle between
 workflow.add_node("agent", call_model)
 workflow.add_node("tools", tool_node)
 
-# Set the entrypoint as `agent`
-# This means that this node is the first one called
 workflow.set_entry_point("agent")
 
-# We now add a conditional edge
 workflow.add_conditional_edges(
-    # First, we define the start node. We use `agent`.
-    # This means these are the edges taken after the `agent` node is called.
     "agent",
-    # Next, we pass in the function that will determine which node is called next.
     should_continue,
-    # Finally we pass in a mapping.
-    # The keys are strings, and the values are other nodes.
-    # END is a special node marking that the graph should finish.
-    # What will happen is we will call `should_continue`, and then the output of that
-    # will be matched against the keys in this mapping.
-    # Based on which one it matches, that node will then be called.
     {
-        # If `tools`, then we call the tool node.
         "continue": "tools",
-        # Otherwise we finish.
         "end": END,
     },
 )
 
-# We now add a normal edge from `tools` to `agent`.
-# This means that after `tools` is called, `agent` node is called next.
 workflow.add_edge("tools", "agent")
 
-# Now we can compile and visualize our graph
 graph = workflow.compile()
 
 from IPython.display import Image, display
@@ -140,11 +111,9 @@ try:
         )
     )
 except Exception:
-    # This requires some extra dependencies and is optional
     pass
 
 
-# Helper function for formatting the stream nicely
 def print_stream(stream):
     for s in stream:
         message = s["messages"][-1]
@@ -154,5 +123,5 @@ def print_stream(stream):
             message.pretty_print()
 
 
-inputs = {"messages": [("user", "what is the weather in sf")]}
+inputs = {"messages": [("user", "서울 날씨 어때?")]}
 print_stream(graph.stream(inputs, stream_mode="values"))

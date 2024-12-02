@@ -7,33 +7,28 @@ load_dotenv()
 model = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
 
-# For this tutorial we will use custom tool that returns pre-defined values for weather in two cities (NYC & SF)
-
 from typing import Literal
 
 from langchain_core.tools import tool
 
 
 @tool
-def get_weather(city: Literal["nyc", "sf"]):
+def get_weather(city: Literal["서울", "부산"]):
     """Use this to get weather information."""
-    if city == "nyc":
-        return "It might be cloudy in nyc"
-    elif city == "sf":
-        return "It's always sunny in sf"
+    if city == "서울":
+        return "서울은 흐릴것 같아요"
+    elif city == "부산":
+        return "부산은 항상 맑아요"
     else:
         raise AssertionError("Unknown city")
 
 
 tools = [get_weather]
 
-# We can add "chat memory" to the graph with LangGraph's checkpointer
-# to retain the chat context between interactions
 from langgraph.checkpoint.memory import MemorySaver
 
 memory = MemorySaver()
 
-# Define the graph
 
 from langgraph.prebuilt import create_react_agent
 
@@ -50,9 +45,9 @@ def print_stream(stream):
 
 
 config = {"configurable": {"thread_id": "1"}}
-inputs = {"messages": [("user", "What's the weather in NYC?")]}
+inputs = {"messages": [("user", "서울 날씨 어때?")]}
 
 print_stream(graph.stream(inputs, config=config, stream_mode="values"))
 
-inputs = {"messages": [("user", "What's it known for?")]}
+inputs = {"messages": [("user", "거기는 무엇으로 유명해?")]}
 print_stream(graph.stream(inputs, config=config, stream_mode="values"))

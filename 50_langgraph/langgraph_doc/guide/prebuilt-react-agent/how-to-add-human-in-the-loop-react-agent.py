@@ -1,4 +1,5 @@
 # First we initialize the model we want to use.
+
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 
@@ -7,8 +8,6 @@ load_dotenv()
 model = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
 
-# For this tutorial we will use custom tool that returns pre-defined values for weather in two cities (NYC & SF)
-
 from langchain_core.tools import tool
 
 
@@ -16,21 +15,19 @@ from langchain_core.tools import tool
 def get_weather(location: str):
     """Use this to get weather information from a given location."""
     if location.lower() in ["nyc", "new york"]:
-        return "It might be cloudy in nyc"
+        return "nyc는 흐린거 같아요"
     elif location.lower() in ["sf", "san francisco"]:
-        return "It's always sunny in sf"
+        return "sf는 항상 맑아요"
     else:
         raise AssertionError("Unknown Location")
 
 
 tools = [get_weather]
 
-# We need a checkpointer to enable human-in-the-loop patterns
 from langgraph.checkpoint.memory import MemorySaver
 
 memory = MemorySaver()
 
-# Define the graph
 
 from langgraph.prebuilt import create_react_agent
 
@@ -50,7 +47,7 @@ def print_stream(stream):
 
 
 config = {"configurable": {"thread_id": "42"}}
-inputs = {"messages": [("user", "what is the weather in SF, CA?")]}
+inputs = {"messages": [("user", "SF, CA 날씨 어때?")]}
 
 print_stream(graph.stream(inputs, config, stream_mode="values"))
 

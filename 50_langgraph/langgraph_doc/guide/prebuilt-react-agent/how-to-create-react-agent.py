@@ -7,28 +7,24 @@ load_dotenv()
 model = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
 
-# For this tutorial we will use custom tool that returns pre-defined values for weather in two cities (NYC & SF)
-
 from typing import Literal
 
 from langchain_core.tools import tool
 
 
 @tool
-def get_weather(city: Literal["nyc", "sf"]):
+def get_weather(city: Literal["서울", "부산"]):
     """Use this to get weather information."""
-    if city == "nyc":
-        return "It might be cloudy in nyc"
-    elif city == "sf":
-        return "It's always sunny in sf"
+    if city == "서울":
+        return "서울은 흐릴것 같아요"
+    elif city == "부산":
+        return "부산은 항상 맑아요"
     else:
         raise AssertionError("Unknown city")
 
 
 tools = [get_weather]
 
-
-# Define the graph
 
 from langgraph.prebuilt import create_react_agent
 
@@ -54,8 +50,8 @@ def print_stream(stream):
             message.pretty_print()
 
 
-inputs = {"messages": [("user", "what is the weather in sf")]}
-print_stream(graph.stream(inputs, stream_mode="values"))
+inputs = {"messages": [("user", "서울 날씨 어때?")]}
+# print_stream(graph.stream(inputs, stream_mode="values"))
 
-inputs = {"messages": [("user", "who built you?")]}
+inputs = {"messages": [("user", "너는 누가 만들었어?")]}
 print_stream(graph.stream(inputs, stream_mode="values"))
