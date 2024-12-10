@@ -6,7 +6,7 @@ from typing import Annotated
 from dotenv import load_dotenv
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
-from openai import base_url, OpenAI
+from openai import base_url, OpenAI, AsyncOpenAI
 from pydantic import BaseModel, Field
 from pydantic.alias_generators import to_camel, to_snake
 
@@ -59,12 +59,24 @@ template = ChatPromptTemplate.from_template("test template: {question}")
 model = ChatOpenAI(temperature=0, model="gpt-4o-mini", base_url="http://localhost:7777")
 
 client = OpenAI(api_key="xxx", base_url="http://localhost:7777")
+client_async = AsyncOpenAI(api_key="xxx", base_url="http://localhost:7777")
 
 
 # 130 ~ 174
 @app.get("/request/openai/sync")
 def openai():
     completion = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": "한국의 수도는?"}],
+        stream=False,
+    )
+
+    return completion.choices[0].message.content
+
+
+@app.get("/request/openai/async")
+async def openai():
+    completion = await client_async.chat.completions.create(
         model="gpt-4o-mini",
         messages=[{"role": "user", "content": "한국의 수도는?"}],
         stream=False,
