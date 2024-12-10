@@ -52,7 +52,7 @@ matplotlib = "*"
 openparse = "*"
 tesseract = "*"
 pysimplegui = "*"
-tabula-py = "*"
+locust = "*"
 
 [dev-packages]
 
