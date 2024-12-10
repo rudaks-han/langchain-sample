@@ -8,7 +8,8 @@ class HelloWorldUser(HttpUser):
     def request(self):
         # url = "/request/sync"
         # url = "/request/async"
-        url = "/request/openai/sync"
+        # url = "/request/openai/sync"
+        url = "/request/openai/async"
         # url = "/request/langchain/sync"
         # url = "/request/langchain/async"
         self.client.get(url)

@@ -53,6 +53,7 @@ openparse = "*"
 tesseract = "*"
 pysimplegui = "*"
 locust = "*"
+uvicorn = {extras = ["standard"], version = "*"}
 
 [dev-packages]
 
