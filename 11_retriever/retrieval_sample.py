@@ -1,6 +1,8 @@
+import asyncio
+
 import langchain
 from dotenv import load_dotenv
-from langchain.vectorstores.chroma import Chroma
+from langchain_chroma import Chroma
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_openai import OpenAIEmbeddings
@@ -49,8 +51,10 @@ if __name__ == "__main__":
 
     message = "주식 시장이란 무엇인가?"
 
-    # result = chain.invoke({"question": message})
-    result = chain.invoke(message)
 
-    print("___________result____________")
+async def ainvoke():
+    result = await chain.ainvoke(message)
     print(result)
+
+
+asyncio.run(ainvoke())

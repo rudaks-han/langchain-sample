@@ -52,8 +52,16 @@ matplotlib = "*"
 openparse = "*"
 tesseract = "*"
 pysimplegui = "*"
+tabula-py = "*"
+#camelot-py = {extras=["base"]}
+gmft = "*"
+llama-index = "*"
+llama-parse = "*"
+opencv-contrib-python = "*"
+tabled = "*"
 locust = "*"
 uvicorn = {extras = ["standard"], version = "*"}
+uvloop = "*"
 
 [dev-packages]
 
