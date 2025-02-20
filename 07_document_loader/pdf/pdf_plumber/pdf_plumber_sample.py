@@ -1,67 +1,123 @@
 import pdfplumber
+from pdfplumber.table import Table
 
 # file_path = "./sample/SPRI_AI_Brief_2023년12월호_F.pdf"
-file_path = "./sample/샘플.pdf"
 # file_path = "./sample/invoice_sample.pdf"
 # file_path = "./sample/invoice.pdf"
 # file_path = "./sample/table_sample.pdf"
+file_path = "./sample/샘플.pdf"
 
 
-def pretty_print_docs(docs):
-    print(
-        f"\n{'-' * 100}\n".join(
-            [f"[doc {i+1}]" + d.page_content for i, d in enumerate(docs)]
-        )
+def is_within_bounds(x0, y0, x1, y1, bound_x0, bound_y0, bound_x1, bound_y1):
+    return (bound_x0 <= x0 <= bound_x1 and bound_y0 <= y0 <= bound_y1) and (
+        bound_x0 <= x1 <= bound_x1 and bound_y0 <= y1 <= bound_y1
     )
 
 
-def not_within_bboxes(obj):
-    """Check if the object is in any of the table's bbox."""
+def is_within_tables(find_tables, extract_tables, x0, y0, x1, y1) -> Table:
+    for i, table in enumerate(find_tables):
+        table_x0, table_y0, table_x1, table_y1 = table.bbox
 
-    def obj_in_bbox(_bbox):
-        """See https://github.com/jsvine/pdfplumber/blob/stable/pdfplumber/table.py#L404"""
-        v_mid = (obj["top"] + obj["bottom"]) / 2
-        h_mid = (obj["x0"] + obj["x1"]) / 2
-        x0, top, x1, bottom = _bbox
-        return (h_mid >= x0) and (h_mid < x1) and (v_mid >= top) and (v_mid < bottom)
+        if is_within_bounds(
+            x0,
+            y0,
+            x1,
+            y1,
+            table_x0,
+            table_y0,
+            table_x1,
+            table_y1,
+        ):
+            return extract_tables[i]
 
-    return not any(obj_in_bbox(__bbox) for __bbox in bboxes)
+    return None
 
 
-if __name__ == "__main__":
-    pdf = pdfplumber.open(file_path)
-    pages = pdf.pages
-    print("총 페이지 수: ", len(pages))
-    for i, page in enumerate(pages):
+def table_to_markdown(table):
+    filtered_row = [value for value in table[0] if value is not None]
+    markdown_table = "| " + " | ".join(filtered_row) + " |" + "\n"
+    markdown_table += "| " + " | ".join(["---"] * len(filtered_row)) + " |\n"
 
-        ts = {
-            "vertical_strategy": "lines",
-            "horizontal_strategy": "lines",
-        }
+    for row in table[1:]:
+        column = []
+        for col_index, col in enumerate(row):
+            if col != "":
+                column.append(col)
+        markdown_table += "| " + " | ".join(column) + " |\n"
 
-        # Get the bounding boxes of the tables on the page.
-        bboxes = [table.bbox for table in page.find_tables(table_settings=ts)]
+    return markdown_table
 
-        # print("Text outside the tables:")
-        # print(page.filter(not_within_bboxes).extract_text())
-        # print(f"[tables] {page.extract_tables()}")
 
-        print(f"[text] {page.extract_text()}")
-        print(f"[tables] {page.extract_tables()}")
+table_settings = {
+    "vertical_strategy": "lines",
+    "horizontal_strategy": "lines",
+}
 
-        lines = page.extract_text_lines()
-        for line in lines:
-            print(line)
-        pass
-        # page_height = page.height
-        # img = page.images and page.images[0]
-        # if len(img) > 0:
-        #     x0 = img["x0"]
-        #     x1 = img["x1"]
-        #     y0 = page_height - img["y1"]
-        #     y1 = page_height - img["y0"]
-        #     if y1 > page_height:
-        #         y1 = page_height
-        #     boxpoint = (x0, y0, x1, y1)
-        #     copy_crop = page.crop(boxpoint)
-        #     image_object = copy_crop.to_image(resolution=400)
+pdf = pdfplumber.open(file_path)
+pages = pdf.pages
+
+result = []
+
+table_append_to_page = []
+all_images = []
+
+for page in pages:
+    find_tables = page.find_tables(table_settings=table_settings)
+    extract_tables = page.extract_tables(table_settings=table_settings)
+    chars = page.chars
+    images = page.images
+    print("=== text ===")
+    for char in chars:
+        text_x0, text_y0, text_x1, text_y1 = (
+            char["doctop"],
+            char["top"],
+            char["doctop"] + char["height"],
+            char["bottom"],
+        )
+        x0, y0, x1, y1 = (
+            char["x0"],
+            char["y0"],
+            char["x1"],
+            char["y1"],
+        )
+
+        table = is_within_tables(
+            find_tables, extract_tables, text_x0, text_y0, text_x1, text_y1
+        )
+        if table is not None:
+            markdown_table = table_to_markdown(table)
+            if markdown_table not in table_append_to_page:
+                result.append("\n\n")
+                result.append(markdown_table)
+                table_append_to_page.append(markdown_table)
+        else:
+            text = char["text"]
+            text += f" ({text_x0, text_y0, text_x1, text_y1}), ({x0, y0, x1, y1})"
+            result.append(text)
+
+    # for image in page.images:
+    #     all_images.append(image)
+    # print("=== tables ===")
+    # tables = page.find_tables()
+    # tables = page.extract_tables()
+    # print(tables)
+
+# print(result)
+print("\n".join(result))
+
+
+for page in pdf.pages:
+    for image in page.images:
+        # x0, y0, x1, y1 = image
+        text_x0, text_y0, text_x1, text_y1 = (
+            char["x0"],
+            char["y0"],
+            char["x1"],
+            char["y1"],
+        )
+        print(f"image: {text_x0, text_y0, text_x1, text_y1}")
+
+# (72.24000000000001, 119.75999999999999, 522.96, 173.27999999999997)
+
+# page = pages[0].extract_tables()
+# print(page)

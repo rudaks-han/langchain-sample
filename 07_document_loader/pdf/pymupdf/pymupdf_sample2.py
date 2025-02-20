@@ -3,8 +3,9 @@ import pymupdf
 # file_path = "./sample/SPRI_AI_Brief_2023년12월호_F.pdf"
 # file_path = "../sample/invoice.pdf"
 # file_path = "./sample/invoice_sample.pdf"
-file_path = "../sample/table_sample.pdf"
+# file_path = "../sample/table_sample.pdf"
 # file_path = "../sample/샘플.pdf"
+file_path = "../sample2/BM202404110000030261_0.pdf"
 
 doc = pymupdf.open(file_path)
 

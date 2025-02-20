@@ -1,10 +1,9 @@
-import io
-import os
-import pathlib
-
 import PIL
 import fitz
+import io
+import os
 import pandas as pd
+import pathlib
 import pymupdf4llm
 
 file_path = "./sample/invoice_sample.pdf"
@@ -51,7 +50,7 @@ def to_table():
 
     for page in doc:  # iterate over the pages
         tabs = page.find_tables()  # locate tables on page
-        if len(tabs.tables) == []:  # no tables found?
+        if len(tabs.find_tables) == []:  # no tables found?
             break  # stop
         tab = tabs[0]  # assume fragment to be 1st table
         dataframes.append(tab.to_pandas())  # append this DataFrame
